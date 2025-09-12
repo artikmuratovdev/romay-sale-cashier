@@ -63,52 +63,7 @@ interface GetAllSalesReq {
 
 interface GetAllSalesRes {
   success: boolean
-  data: {
-    _id: string
-    branch_id: {
-      _id: string
-      name: string
-      address: string
-    }
-    cashier_id: {
-      _id: string
-      username: string
-      phone: string
-    }
-    client_id: {
-      _id: string
-      username: string
-      phone: string
-    }
-    items: {
-      product_id: {
-        _id: string
-        product: {
-          _id: string
-          name: string
-          category_id: {
-            _id: string
-            name: string
-            description: string
-          }
-        }
-      }
-      quantity: number
-      price: number
-      _id: string
-    }[]
-    status: string
-    payments: {
-      total_amount: number
-      paid_amount: number
-      debt_amount: number
-      type: string
-      currency: string
-      _id: string
-    }
-    created_at: Date
-    updated_at: Date
-  }[]
+  data: Sale[]
   pagination: {
     total: number
     total_pages: number
@@ -117,4 +72,53 @@ interface GetAllSalesRes {
     next_page: boolean
     prev_page: boolean
   }
+}
+
+interface Sale {
+  _id: string
+  branch_id: {
+    _id: string
+    name: string
+    address: string
+  }
+  cashier_id: {
+    _id: string
+    username: string
+    phone: string
+  }
+  client_id: {
+    _id: string
+    username: string
+    phone: string
+  }
+  items: SaleItem[]
+  status: string
+  payments: {
+    total_amount: number
+    paid_amount: number
+    debt_amount: number
+    type: string
+    currency: string
+    _id: string
+  }
+  created_at: Date
+  updated_at: Date
+}
+
+interface SaleItem {
+  product_id: {
+    _id: string
+    product: {
+      _id: string
+      name: string
+      category_id: {
+        _id: string
+        name: string
+        description: string
+      }
+    }
+  }
+  quantity: number
+  price: number
+  _id: string
 }

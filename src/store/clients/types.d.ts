@@ -3,11 +3,42 @@ export interface ClientResponse {
   data: Client[]
 }
 
+export interface ClientRes {
+  success: boolean
+  data: {
+    debt: {
+      amount: number
+      currency: string
+    }
+    _id: string
+    username: string
+    description: string
+    sales_count: number
+    phone: string
+    profession: string
+    birth_date: Date
+    branch_id: {
+      _id: string
+      name: string
+      address: string
+    }
+    address: string
+    customer_tier: string
+    created_at: Date
+    updated_at: Date
+  }
+  error: {
+    statusCode: number
+    msg: string
+  }
+}
+
 export interface ClientRequest {
   search?: string
   branch_id?: string
   page?: number
   limit?: number
+  client_id?: string
 }
 
 export interface AddClientResponse {}

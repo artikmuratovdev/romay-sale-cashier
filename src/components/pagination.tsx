@@ -1,41 +1,59 @@
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
 
-export function PaginationComponent() {
+export function PaginationComponent({
+  page,
+  setPage,
+  next_page,
+}: {
+  page: number
+  next_page: number | null | undefined
+  setPage: React.Dispatch<React.SetStateAction<number>>
+}) {
   return (
     <Pagination className="w-full">
       <PaginationContent>
+        {page > 1 && (
+          <>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setPage(page - 1)}
+                size="default"
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink onClick={() => setPage(page - 1)} size="default">
+                {page - 1}
+              </PaginationLink>
+            </PaginationItem>
+          </>
+        )}
         <PaginationItem>
-          <PaginationPrevious href="#" size="default" />
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationLink href="#" size="default">
-            1
+          <PaginationLink size="default" isActive>
+            {page}
           </PaginationLink>
         </PaginationItem>
-        <PaginationItem>
-          <PaginationLink href="#" size="default" isActive>
-            2
-          </PaginationLink>
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationLink href="#" size="default">
-            3
-          </PaginationLink>
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationEllipsis />
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationNext href="#" size="default" />
-        </PaginationItem>
+        {next_page && (
+          <>
+            <PaginationItem>
+              <PaginationLink onClick={() => setPage(page + 1)} size="default">
+                {page + 1}
+              </PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setPage(page + 1)}
+                size="default"
+              />
+            </PaginationItem>
+          </>
+        )}
       </PaginationContent>
     </Pagination>
   )

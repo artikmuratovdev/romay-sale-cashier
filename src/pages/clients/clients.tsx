@@ -1,17 +1,8 @@
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useGetClientsQuery } from '@/store/clients/clients.api'
-import { CheckRole } from '@/utils/checkRole'
-import { useGetRole } from '@/hooks/use-get-role'
 import { AlertCircle } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { TableSkeleton } from '../../components/ui/table-skeleton'
 import AddClientDialog from './AddClientDialog'
 import { useGetUser } from '@/hooks/useGetUser'
@@ -44,35 +35,18 @@ function Clients() {
     isLoading,
     isError,
   } = useGetClientsQuery({ branch_id: me?.branch_id._id })
-  // const {data:branches} = useGetBranchesQuery({});
 
   const navigate = useNavigate()
 
   SetLocation('Mijozlar')
-
-  const role = useGetRole()
   const [open, setOpen] = useState(false)
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-[30px] font-semibold text-[#09090B]">Mijozlar</h1>
-        <div className="flex gap-3">
-          <Select>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Barcha filiallar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barchasi</SelectItem>
-              <SelectItem value="termiz">Termiz</SelectItem>
-              <SelectItem value="shahrisabz">Shahrisabz</SelectItem>
-            </SelectContent>
-          </Select>
-          {CheckRole(role, ['manager', 'sale_cashier']) && (
-            <Button onClick={() => setOpen(true)} variant="default">
-              Mijoz qo'shish
-            </Button>
-          )}
-        </div>
+        <Button onClick={() => setOpen(true)} variant="default">
+          Mijoz qo'shish
+        </Button>
       </div>
 
       {isLoading ? (
@@ -120,13 +94,7 @@ function Clients() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-[#18181B]">
-                      <Link
-                        to={`/manager/clients/${c.id}`}
-                        className="hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {c.username}
-                      </Link>
+                      {c.username}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -141,17 +109,18 @@ function Clients() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm">
+                      {c.balance}
                       <BalanceCell value={c.balance || 0} />
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="text-sm text-[#18181B]">
-                      {c.orders || 0}
+                      {c.sales_count || 0}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="text-sm text-[#18181B]">
-                      {c.branch?.name || "Noma'lum"}
+                      {c.branch_id.name || "Noma'lum"}
                     </div>
                   </td>
                 </tr>

@@ -4,7 +4,6 @@ import { Check, Printer } from 'lucide-react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
-import { Calendar22 } from '../../components/calendar'
 import { useDispatch, useSelector } from 'react-redux'
 import { setClientId, setLocation } from '@/store/slice/Location.slice'
 import {
@@ -114,6 +113,7 @@ export default function Create_selling() {
           onSuccess: () => {
             toast.success('Mahsulotlar muvaffaqiyatli qo`shildi')
             dispatch(clearProducts())
+            window.location.reload()
           },
           onError: () => {
             toast.error('Xatolik yuz berdi')
@@ -187,10 +187,6 @@ export default function Create_selling() {
                   UZS
                 </span>
               </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label>Qarzni berish sanasi</Label>
-              <Calendar22 disabled={!enabled.search} className="w-full" />
             </div>
           </CardContent>
         </Card>

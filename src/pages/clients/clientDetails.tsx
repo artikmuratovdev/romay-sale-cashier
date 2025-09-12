@@ -1,19 +1,10 @@
 import { Button } from '@/components/ui/button'
 import { SetLocation } from '@/hooks/setLocation'
+import { useGetOneClientQuery } from '@/store/clients/clients.api'
+import { useGetAllSalesQuery } from '@/store/sales/salesApi'
+import { format } from 'date-fns'
 import { Download } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
-
-// Dummy dataset
-const orders = Array.from({ length: 8 }).map((_, i) => ({
-  id: String(i + 1),
-  date: '02.02.2025',
-  number: '123456',
-  total: 2040500,
-  paid: 1500000,
-  debt: 540500,
-  downloadable: i % 2 === 1,
-  image: '/vite.svg',
-}))
+import { useParams } from 'react-router-dom'
 
 function money(n: number, sign: 'neutral' | 'debt' | 'pos' = 'neutral') {
   const text = n.toLocaleString('uz-UZ')
@@ -28,7 +19,17 @@ function money(n: number, sign: 'neutral' | 'debt' | 'pos' = 'neutral') {
 
 export default function ClientDetails() {
   const id = useParams<{ id: string }>().id
-  console.log(id)
+  const { data } = useGetOneClientQuery(id as string, { skip: !id })
+  const { data: client_items } = useGetAllSalesQuery(
+    { client_id: id as string },
+    { skip: !id }
+  )
+
+  const items = client_items?.data
+    .map((item) => item.items.map((item) => item))
+    .flat()
+
+  console.log(items)
   SetLocation('Mijozlar > Mijoz haqida')
   return (
     <div className="space-y-6">
@@ -39,18 +40,18 @@ export default function ClientDetails() {
       <div className="border border-[#E4E4E7] rounded-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
           <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Info title="Ismi" value="Hikmatullo" />
-            <Info title="segmenti" value="O'ta" />
-            <Info title="Filial" value="Surxandaryo, Termiz" />
-            <Info title="Phone Number" value="+998 90 123 45 67" />
-            <Info title="Kasbi" value="Usta" />
-            <Info title="Mijoz Manzili" value="Surxandaryo, Termiz" />
+            <Info title="Ismi" value={data?.data.username || ''} />
+            <Info title="segmenti" value={data?.data.customer_tier || ''} />
+            <Info title="Filial" value={data?.data.branch_id.name || ''} />
+            <Info title="Phone Number" value={data?.data.phone || ''} />
+            <Info title="Kasbi" value={data?.data.profession || ''} />
+            <Info title="Mijoz Manzili" value={data?.data.address || ''} />
           </div>
           <div className="md:col-span-1">
             <div className="rounded-md border border-[#E4E4E7] p-5">
               <div className="text-sm text-[#71717A]">Balans</div>
               <div className="text-[28px] font-semibold text-rose-600">
-                -5,500,000
+                {money(data?.data.debt.amount || 0, 'debt')} so'm
               </div>
             </div>
           </div>
@@ -79,39 +80,42 @@ export default function ClientDetails() {
                 To'lov qilingan summa
               </th>
               <th className="px-6 py-3 text-left font-medium">Qarzdorlik</th>
-              <th className="px-6 py-3 text-left font-medium">Yuklab olish</th>
+              <th className="px-6 py-3 text-center font-medium">
+                Yuklab olish
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E4E4E7]">
-            {orders.map((o) => (
-              <tr key={o.id} className="hover:bg-[#F9F9F9]">
+            {client_items?.data.map((o) => (
+              <tr key={o._id} className="hover:bg-[#F9F9F9]">
                 <td className="px-6 py-4">
-                  <img src={o.image} alt="" className="w-9 h-9 rounded" />
+                  <img src={''} alt="" className="w-9 h-9 rounded" />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-[#18181B]">{o.date}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-[#18181B]">
-                    <Link
-                      to={`/manager/orders/${o.number}`}
-                      className="hover:underline"
-                    >
-                      {o.number}
-                    </Link>
+                    {format(o.created_at, 'dd.MM.yyyy')}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-[#18181B]">{money(o.total)}</div>
+                <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <div className="text-sm text-[#18181B]">{o.payments._id}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-[#18181B]">{money(o.paid)}</div>
+                <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <div className="text-sm text-[#18181B]">
+                    {money(o.payments.total_amount)}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm">{money(o.debt, 'debt')}</div>
+                <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <div className="text-sm text-[#18181B]">
+                    {money(o.payments.paid_amount)}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Button disabled={!o.downloadable} variant="outline">
+                <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <div className="text-sm">
+                    {money(o.payments.debt_amount, 'debt')}
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <Button disabled={true} variant="outline">
                     <Download className="mr-2 h-4 w-4" /> To'lov cheki
                   </Button>
                 </td>

@@ -6,6 +6,7 @@ import type {
   AddClientRequest,
   UpdateClientRequest,
   UpdateClientResponse,
+  ClientRes,
 } from './types'
 
 export const ClientsApi = baseApi.injectEndpoints({
@@ -41,7 +42,7 @@ export const ClientsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['clients'],
     }),
-    getOneClient: build.query<ClientResponse, string>({
+    getOneClient: build.query<ClientRes, string>({
       query: (id) => ({
         url: `/client/get-one/${id}`,
         method: 'GET',

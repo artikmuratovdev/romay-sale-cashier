@@ -24,12 +24,37 @@ export interface Product {
 
 export interface ProductWarehouseItem {
   _id: string
-  product: Product
+  product: {
+    _id: string
+    name: string
+    description: string
+    category_id: {
+      _id: string
+      name: string
+      description: string
+      created_at: Date
+      updated_at: Date
+    }
+    price: number
+    status: string
+    currency: string
+    images: string[]
+    barcode: string
+    attributes: {
+      key: string
+      value: string
+      _id: string
+    }[]
+    from_create: string
+    created_at: Date
+    updated_at: Date
+  }
   product_count: number
+  branch: string
   product_barcode: string
-  product_name: string
-  created_at: string
-  updated_at: string
+  from_create: string
+  created_at: Date
+  updated_at: Date
 }
 
 export interface GetAllProductsResponse {
@@ -55,6 +80,7 @@ export interface CreateProductRequest {
   attributes: ProductAttribute[]
   product_count: number
   from_create: string
+  branch: string
 }
 
 export interface CreateProductResponse {}

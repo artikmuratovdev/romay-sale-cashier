@@ -48,15 +48,15 @@ export function ProductDetailsModal({
           <div className="space-y-4">
             <div className="w-[350px] h-40">
               <img
-                src="/vite.svg"
-                alt={product.product_name}
+                src={product.product.images[0]}
+                alt={product.product.name}
                 className="w-full h-full rounded-md object-fit"
               />
             </div>
             <div className="flex flex-col gap-1 items-start mt-10">
               {/* <Tag variant="ghost">{product?.product?.category_id}</Tag> */}
               <p className="font-medium text-[#18181B]">
-                {product?.product_name}
+                {product?.product.name}
               </p>
               <div className="flex items-center gap-4">
                 <p className="font-medium text-[#059669]">
