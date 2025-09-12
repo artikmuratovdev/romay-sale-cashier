@@ -66,7 +66,6 @@ export default function ClientDetails() {
         <table className="w-full">
           <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
             <tr>
-              <th className="px-6 py-3 text-left font-medium"></th>
               <th className="px-6 py-3 text-left font-medium">
                 Buyurtma sanasi
               </th>
@@ -88,9 +87,6 @@ export default function ClientDetails() {
           <tbody className="divide-y divide-[#E4E4E7]">
             {client_items?.data.map((o) => (
               <tr key={o._id} className="hover:bg-[#F9F9F9]">
-                <td className="px-6 py-4">
-                  <img src={''} alt="" className="w-9 h-9 rounded" />
-                </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-[#18181B]">
                     {format(o.created_at, 'dd.MM.yyyy')}

@@ -116,6 +116,7 @@ interface SaleItem {
         name: string
         description: string
       }
+      images: string[]
     }
   }
   quantity: number
