@@ -174,10 +174,14 @@ export default function Create_selling() {
               <Label>Naqd</Label>
               <div className="relative">
                 <Input
+                  disabled={!enabled.search}
                   className="py-2 px-3 pr-10"
                   placeholder="0"
-                  value={payment}
-                  onChange={(e) => setPayment(Number(e.target.value))}
+                  type="number"
+                  value={payment === 0 ? '' : payment}
+                  onChange={(e) =>
+                    setPayment(e.target.value ? Number(e.target.value) : 0)
+                  }
                 />
                 <span className="absolute right-2 top-[10px] text-[14px] text-[#71717A]">
                   UZS
@@ -186,7 +190,7 @@ export default function Create_selling() {
             </div>
             <div className="flex flex-col gap-2">
               <Label>Qarzni berish sanasi</Label>
-              <Calendar22 className="w-full" />
+              <Calendar22 disabled={!enabled.search} className="w-full" />
             </div>
           </CardContent>
         </Card>
@@ -209,14 +213,14 @@ export default function Create_selling() {
                 <span>Jami:</span>
                 <span>{total.toLocaleString()} UZS</span>
               </div>
-              <div className="text-[20px] font-semibold flex items-center justify-between">
+              {/* <div className="text-[20px] font-semibold flex items-center justify-between">
                 <span>Berildi:</span>
                 <span className="text-green-600">8 250 000 UZS</span>
               </div>
               <div className="text-[20px] font-semibold flex items-center justify-between">
                 <span>Qarz:</span>
                 <span className="text-[#DC3E42]">200 000 UZS</span>
-              </div>
+              </div>*/}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Button variant={'secondary'}>

@@ -12,14 +12,20 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
-export function Calendar22({ className }: { className?: string }) {
+export function Calendar22({
+  className,
+  disabled,
+}: {
+  className?: string
+  disabled?: boolean
+}) {
   const [open, setOpen] = React.useState(false)
   const [date, setDate] = React.useState<Date | undefined>(undefined)
 
   return (
     <div className="flex gap-3">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger disabled={disabled} asChild>
           <Button
             variant="outline"
             id="date"

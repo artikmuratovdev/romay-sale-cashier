@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/input'
+import { useGetUser } from '@/hooks/useGetUser'
 import { useGetAllProductsQuery } from '@/store/product/product.api'
 import type { ProductWarehouseItem } from '@/store/product/types'
 import { addToAllProduct, addToFilteredProduct } from '@/store/slice/Sale.slice'
@@ -10,7 +11,10 @@ import { useDispatch, useSelector } from 'react-redux'
 function SearchInput({ enabled }: { enabled: { search: boolean } }) {
   const [focus, setFocus] = useState(true)
   const [search, setSearch] = useState('')
-  const { data: products } = useGetAllProductsQuery({})
+  const me = useGetUser()
+  const { data: products } = useGetAllProductsQuery({
+    branch: me?.branch_id._id,
+  })
   const dispatch = useDispatch()
 
   useEffect(() => {
