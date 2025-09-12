@@ -45,7 +45,7 @@ export interface AddClientResponse {}
 
 export interface AddClientRequest {
   username: string
-  description: string
+  description?: string
   phone: string
   profession: string
   birth_date: string
