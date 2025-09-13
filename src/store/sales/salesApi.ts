@@ -3,6 +3,7 @@ import type {
   ClientsRes,
   CreateSale,
   CreateSaleRes,
+  GetAllAssistant,
   GetAllSalesReq,
   GetAllSalesRes,
 } from './types'
@@ -45,6 +46,13 @@ export const salesApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    getAllAssistant: build.query<GetAllAssistant, GetAllSalesReq>({
+      query: (params) => ({
+        url: '/sales-assistant/get-all',
+        method: 'GET',
+        params,
+      }),
+    }),
   }),
 })
 
@@ -54,4 +62,5 @@ export const {
   useGetClientsQuery,
   useUpdateClientIDMutation,
   useAddItemsMutation,
+  useGetAllAssistantQuery,
 } = salesApi

@@ -125,7 +125,7 @@ function ProductPage() {
           <table className="w-full">
             <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
               <tr>
-                <th className="px-6 py-3 text-left font-medium">nomi</th>
+                <th className="px-6 py-3 text-center font-medium">Nomi</th>
                 <th className="px-6 py-3 text-left font-medium">Status</th>
                 <th className="px-6 py-3 text-center font-medium">
                   Kategoriya

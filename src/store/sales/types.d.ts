@@ -1,8 +1,13 @@
 export interface CreateSale {
   branch_id: string
   cashier_id: string
-  client_id?: string
-  search?: string
+  client_id: string
+  sales_assistant_id: string
+  items: {
+    product_id: string
+    quantity: nummber
+  }[]
+  paid_amount: number
 }
 interface CreateSaleRes {
   success: boolean
@@ -72,6 +77,24 @@ interface GetAllSalesRes {
     next_page: boolean
     prev_page: boolean
   }
+}
+
+interface GetAllAssistant extends GetAllSalesRes {
+  data: {
+    total_sales: {
+      amount: number
+      currency: string
+    }
+    _id: string
+    username: string
+    description: string
+    phone: string
+    branch_id: string
+    address: string
+    hire_date: string
+    created_at: string
+    updated_at: string
+  }[]
 }
 
 interface Sale {

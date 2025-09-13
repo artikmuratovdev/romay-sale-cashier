@@ -5,19 +5,16 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
 import { useDispatch, useSelector } from 'react-redux'
-import { setClientId, setLocation } from '@/store/slice/Location.slice'
-import {
-  useAddItemsMutation,
-  useCreateSaleMutation,
-} from '@/store/sales/salesApi'
-import { useGetUser } from '@/hooks/useGetUser'
+import { setLocation } from '@/store/slice/Location.slice'
+import { useCreateSaleMutation } from '@/store/sales/salesApi'
 import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
 import Sale_Table from './Table'
 import SearchInput from './SearchInput'
 import type { RootState } from '@/store/store'
-import { Combobox } from './Combobox'
-import { clearProducts } from '@/store/slice/Sale.slice'
+import { ClientCombobox } from './ClientCombobox'
+import { useGetUser } from '@/hooks/useGetUser'
+import { AssistantCombobox } from './AssistentCombobox'
 
 export type Product = {
   id: string
@@ -30,38 +27,16 @@ export type Product = {
 }
 
 export default function Create_selling() {
-  const me = useGetUser()
-  const [enabled, setEnabled] = useState({
-    search: false,
-  })
   const [products, setProducts] = useState<Product[]>([])
   const dispatch = useDispatch()
   const handleRequest = useHandleRequest()
   const [createSale] = useCreateSaleMutation()
-  const [addItems] = useAddItemsMutation()
+  const me = useGetUser()
 
-  const ClientId = useSelector((state: RootState) => state.location.clientId)
+  const ClientId = useSelector((state: RootState) => state.sale.client)
+  const AssistantId = useSelector((state: RootState) => state.sale.assistant)
 
   const [payment, setPayment] = useState(0)
-
-  const createSaleFn = async () => {
-    await handleRequest({
-      request: () =>
-        createSale({
-          branch_id: me?.branch_id._id as string,
-          cashier_id: me?._id as string,
-        }).unwrap(),
-      onSuccess: (res) => {
-        setEnabled((prev) => ({ ...prev, search: true }))
-        toast.success(res.msg)
-        dispatch(setClientId(res.data.id))
-      },
-      onError: (err) => {
-        toast.error(err.msg)
-      },
-    })
-    setEnabled((prev) => ({ ...prev, search: true }))
-  }
 
   const [date, setDate] = useState(new Date())
 
@@ -98,43 +73,81 @@ export default function Create_selling() {
     dispatch(setLocation('Sotuv Yaratish'))
   }, [dispatch])
 
+  const validateSale = () => {
+    const errors = []
+
+    // Check if there are items
+    if (!filteredProducts || filteredProducts.length === 0) {
+      errors.push('Mahsulotlar')
+    }
+
+    // Check if client is selected
+    if (!ClientId) {
+      errors.push('Mijoz')
+    }
+
+    // Check if assistant is selected
+    if (!AssistantId) {
+      errors.push('Assistent')
+    }
+
+    // Check if payment amount is provided
+    if (payment <= 0) {
+      errors.push("To'lov miqdori")
+    }
+
+    return errors
+  }
+
   const sendItems = async () => {
+    const validationErrors = validateSale()
+
+    if (validationErrors.length > 0) {
+      const errorMessage = `Quyidagi maydonlarni to'ldiring: ${validationErrors.join(', ')}`
+      toast.error(errorMessage)
+      return
+    }
+
     if (filteredProducts) {
-      filteredProducts.forEach((p) => {
-        handleRequest({
-          request: async () => {
-            const res = await addItems({
-              product_id: p._id,
-              quantity: p.qty,
-              clientId: ClientId as string,
-            }).unwrap()
-            return res
-          },
-          onSuccess: () => {
-            toast.success('Mahsulotlar muvaffaqiyatli qo`shildi')
-            dispatch(clearProducts())
-            window.location.reload()
-          },
-          onError: () => {
-            toast.error('Xatolik yuz berdi')
-          },
-        })
+      const data = {
+        branch_id: me?.branch_id._id as string,
+        client_id: ClientId as string,
+        sales_assistant_id: AssistantId as string,
+        cashier_id: me?._id as string,
+        items: filteredProducts.map((p) => ({
+          product_id: p._id,
+          quantity: p.qty,
+        })),
+        paid_amount: payment,
+      }
+      console.log(data)
+
+      await handleRequest({
+        request: () => createSale(data).unwrap(),
+        onSuccess: (data) => {
+          toast.success(
+            data.msg || data.message || 'Sotuv muvaffaqiyatli yaratildi!'
+          )
+        },
+        onError: (err) => {
+          toast.error(err.error.msg)
+        },
       })
+
+      // If all validations pass, you can proceed with the API call
+      try {
+        // Your API call logic here
+        toast.success('Sotuv muvaffaqiyatli yaratildi!')
+      } catch (error) {
+        toast.error((error as string) || 'Xatolik yuz berdi')
+      }
     }
   }
 
   return (
     <div>
       <div className="flex items-center gap-4 mb-4">
-        <SearchInput enabled={enabled} />
-        <Button
-          className="w-28 shadow-lg"
-          variant={'outline'}
-          onClick={createSaleFn}
-          disabled={enabled.search}
-        >
-          Sotuv qo'shish
-        </Button>
+        <SearchInput />
       </div>
 
       {/* If products exist */}
@@ -153,28 +166,34 @@ export default function Create_selling() {
               Hozircha mahsulotlar yo'q
             </h2>
             <p className="text-[14px] text-slate-600">
-              Mahsulotlar kiritilishi bilan bu yerda ko’rinadi
+              Mahsulotlar kiritilishi bilan bu yerda ko'rinadi
             </p>
           </div>
         </Card>
       )}
 
-      {/* Bottom section same as your old one */}
+      {/* Bottom section with updated comboboxes */}
       <div className="grid grid-cols-2 gap-8 mt-8">
         <Card>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label>Mijoz</Label>
-              <Combobox disabled={!enabled.search} />
+              <ClientCombobox />
               <p className="text-[14px] text-[#71717A]">
                 Qarz bo'lmasa majburiy emas
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Assistent</Label>
+              <AssistantCombobox />
+              <p className="text-[14px] text-[#71717A]">
+                Assistent tanlang (ixtiyoriy)
               </p>
             </div>
             <div className="flex flex-col gap-2">
               <Label>Naqd</Label>
               <div className="relative">
                 <Input
-                  disabled={!enabled.search}
                   className="py-2 px-3 pr-10"
                   placeholder="0"
                   type="number"
@@ -201,7 +220,7 @@ export default function Create_selling() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Naqd: </span>
-                <span>{payment} UZS</span>
+                <span>{payment.toLocaleString()} UZS</span>
               </div>
             </div>
             <div>
@@ -209,14 +228,6 @@ export default function Create_selling() {
                 <span>Jami:</span>
                 <span>{total.toLocaleString()} UZS</span>
               </div>
-              {/* <div className="text-[20px] font-semibold flex items-center justify-between">
-                <span>Berildi:</span>
-                <span className="text-green-600">8 250 000 UZS</span>
-              </div>
-              <div className="text-[20px] font-semibold flex items-center justify-between">
-                <span>Qarz:</span>
-                <span className="text-[#DC3E42]">200 000 UZS</span>
-              </div>*/}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Button variant={'secondary'}>

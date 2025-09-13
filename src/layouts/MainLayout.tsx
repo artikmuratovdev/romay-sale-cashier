@@ -57,7 +57,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="z-20">
+      <Sidebar collapsible="icon" className="z-30">
         <SidebarHeader>
           <div className="p-2 flex items-center gap-2">
             <img src="/logo.svg" alt="" className="h-6 w-6" />
@@ -69,7 +69,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </div>
         </SidebarHeader>
-        <SidebarContent className="z-20">
+        <SidebarContent>
           {[
             {
               label: 'Asosiy',
@@ -130,9 +130,9 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="border-b z-10 top-0 left-0 right-0 bg-white">
-          <div className="flex items-center pr-6 justify-between">
-            <div className="container flex h-16 items-center justify-between px-4 pr-0">
+        <header className="border-b sticky top-0 z-10 bg-white">
+          <div className="flex items-center pr-6 justify-between w-full">
+            <div className="flex h-16 items-center justify-between px-4 flex-1">
               <div className="flex items-center gap-2">
                 <SidebarTrigger />
                 <Separator
@@ -140,10 +140,9 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
                   className="min-h-4 min-w-0.5"
                 />
                 <h1 className="text-md font-medium">{location}</h1>
-                {/* <span className="text-sm text-muted-foreground">({role})</span> */}
               </div>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
               <Calendar22 />
               <Select
                 onValueChange={(value) => {
@@ -151,7 +150,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 }}
                 value={selectedBranch}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[150px]">
                   <SelectValue placeholder="Barch Filiallar" />
                 </SelectTrigger>
                 <SelectContent>
