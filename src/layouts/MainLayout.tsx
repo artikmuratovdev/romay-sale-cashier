@@ -164,7 +164,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </div>
         </header>
-        <main className="p-6">{children}</main>
+        <main className="px-5 py-2">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

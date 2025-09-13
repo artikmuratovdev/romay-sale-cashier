@@ -61,6 +61,7 @@ export interface GetAllProductsResponse {
   success: boolean
   page_count: number
   current_page: number
+  current_limit: number
   next_page: number | null
   after_filtering_count: number
   data: ProductWarehouseItem[]

@@ -16,6 +16,7 @@ export const salesApi = baseApi.injectEndpoints({
         method: 'GET',
         params,
       }),
+      providesTags: ['sale'],
     }),
     createSale: build.mutation<CreateSaleRes, CreateSale>({
       query: (body) => ({
@@ -38,6 +39,16 @@ export const salesApi = baseApi.injectEndpoints({
         method: 'PATCH',
         body,
       }),
+      invalidatesTags: ['sale'],
+    }),
+    // Add the missing updateSale mutation
+    updateSale: build.mutation<object, { id: string; data: object }>({
+      query: ({ id, data }) => ({
+        url: `/sales/update/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['sale'],
     }),
     addItems: build.mutation({
       query: (body) => ({
@@ -45,6 +56,7 @@ export const salesApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['sale'],
     }),
     getAllAssistant: build.query<GetAllAssistant, GetAllSalesReq>({
       query: (params) => ({
@@ -52,6 +64,14 @@ export const salesApi = baseApi.injectEndpoints({
         method: 'GET',
         params,
       }),
+      providesTags: ['sale'],
+    }),
+    deleteSale: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/sales/delete/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['sale'],
     }),
   }),
 })
@@ -61,6 +81,8 @@ export const {
   useCreateSaleMutation,
   useGetClientsQuery,
   useUpdateClientIDMutation,
+  useUpdateSaleMutation, // Add this export
   useAddItemsMutation,
   useGetAllAssistantQuery,
+  useDeleteSaleMutation,
 } = salesApi

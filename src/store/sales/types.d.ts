@@ -109,6 +109,11 @@ interface Sale {
     username: string
     phone: string
   }
+  sales_assistant_id: {
+    _id: string
+    username: string
+    phone: string
+  }
   client_id: {
     _id: string
     username: string

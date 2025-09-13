@@ -7,6 +7,8 @@ import { TableSkeleton } from '../../components/ui/table-skeleton'
 import AddClientDialog from './AddClientDialog'
 import { useGetUser } from '@/hooks/useGetUser'
 import { SetLocation } from '@/hooks/setLocation'
+import { TablePagination } from '@/components/TablePagination'
+import { Input } from '@/components/ui/input'
 
 function BalanceCell({ value }: { value: number }) {
   const isZero = value === 0
@@ -30,20 +32,48 @@ function BalanceCell({ value }: { value: number }) {
 
 function Clients() {
   const me = useGetUser()
-  const {
-    data: { data: clientsData = [] } = {},
-    isLoading,
-    isError,
-  } = useGetClientsQuery({ branch_id: me?.branch_id._id })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [search, setSearch] = useState('')
+
+  const { data, isLoading, isError } = useGetClientsQuery({
+    branch_id: me?.branch_id._id,
+    page: currentPage,
+    limit: limit,
+    search: search,
+  })
 
   const navigate = useNavigate()
+  const clientsData = data?.data || []
+  const pagination = data?.pagination
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const handleItemsPerPageChange = (itemsPerPage: number) => {
+    setLimit(itemsPerPage)
+    setCurrentPage(1) // Reset to first page when items per page changes
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+    setCurrentPage(1) // Reset to first page when searching
+  }
 
   SetLocation('Mijozlar')
   const [open, setOpen] = useState(false)
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center space-x-6">
         <h1 className="text-[30px] font-semibold text-[#09090B]">Mijozlar</h1>
+        <Input
+          placeholder="Ismi yoki telefon raqami bo'yicha qidiring"
+          className="pr-10 max-w-md"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
         <Button onClick={() => setOpen(true)} variant="default">
           Mijoz qo'shish
         </Button>
@@ -63,9 +93,13 @@ function Clients() {
       ) : clientsData.length === 0 ? (
         <div className="border border-[#E4E4E7] rounded-lg p-8 flex flex-col items-center justify-center space-y-4">
           <AlertCircle className="h-12 w-12 text-gray-400" />
-          <p className="text-lg text-gray-600">Mijozlar topilmadi</p>
+          <p className="text-lg text-gray-600">
+            {search ? 'Qidiruv natijasi topilmadi' : 'Mijozlar topilmadi'}
+          </p>
           <p className="text-gray-500">
-            Hozircha hech qanday mijoz mavjud emas
+            {search
+              ? `"${search}" bo'yicha hech qanday mijoz topilmadi`
+              : 'Hozircha hech qanday mijoz mavjud emas'}
           </p>
         </div>
       ) : (
@@ -109,7 +143,6 @@ function Clients() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm">
-                      {c.balance}
                       <BalanceCell value={c.balance || 0} />
                     </div>
                   </td>
@@ -128,6 +161,16 @@ function Clients() {
             </tbody>
           </table>
         </div>
+      )}
+      {pagination && (
+        <TablePagination
+          currentPage={pagination.page || 1}
+          totalPages={pagination.total_pages || 1}
+          totalItems={pagination.total || 0}
+          itemsPerPage={pagination.limit || 10}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
       )}
       <AddClientDialog open={open} setOpen={setOpen} />
     </div>

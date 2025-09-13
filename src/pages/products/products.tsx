@@ -1,20 +1,25 @@
 import { Search, LayoutGrid, List } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { PaginationComponent } from '@/components/pagination'
 import { useState, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { useGetAllProductsQuery } from '@/store/product/product.api'
 import type { ProductWarehouseItem } from '@/store/product/types'
 import { Button } from '@/components/ui/button'
-import { ProductDetailsModal } from '@/components/product-details-modal'
 import { useGetUser } from '@/hooks/useGetUser'
+import { EnhancedProductDetailsModal } from '@/components/enhanced-product-details-modal'
+import { TablePagination } from '@/components/TablePagination'
+
 function ProductPage() {
   const me = useGetUser()
   const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [search, setSearch] = useState('')
+
   const { data: getAllProductsData } = useGetAllProductsQuery({
     branch: me?.branch_id._id,
     page,
-    limit: 10,
+    limit,
+    search, // Add search to the query if your API supports it
   })
 
   const formatUsd = (value: string) => {
@@ -32,22 +37,38 @@ function ProductPage() {
   }
 
   const [view, setView] = useState<'list' | 'grid'>('list')
-  const [search, setSearch] = useState('')
   const [selectedProduct, setSelectedProduct] =
     useState<ProductWarehouseItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Filter products based on search input
+  const productsData = getAllProductsData?.data || []
+
+  // Handle pagination
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleItemsPerPageChange = (itemsPerPage: number) => {
+    setLimit(itemsPerPage)
+    setPage(1) // Reset to first page when items per page changes
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+    setPage(1) // Reset to first page when searching
+  }
+
+  // Filter products based on search input (client-side filtering if API doesn't support search)
   const filteredProducts = useMemo(() => {
-    if (!getAllProductsData?.data) return []
+    if (!productsData) return []
 
     if (!search.trim()) {
-      return getAllProductsData.data
+      return productsData
     }
 
     const searchTerm = search.toLowerCase().trim()
 
-    return getAllProductsData.data.filter((product) => {
+    return productsData.filter((product) => {
       const productName = product.product.name.toLowerCase()
       const productDescription = (
         product.product.description || ''
@@ -66,7 +87,7 @@ function ProductPage() {
         productPrice.includes(searchTerm)
       )
     })
-  }, [getAllProductsData?.data, search])
+  }, [productsData, search])
 
   const handleProductClick = (product: ProductWarehouseItem) => {
     setSelectedProduct(product)
@@ -113,7 +134,7 @@ function ProductPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 w-[400px]"
             placeholder="Mahsulot nomi, bar-kod, kategoriya bo'yicha qidirish..."
           />
@@ -216,64 +237,72 @@ function ProductPage() {
           </table>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product, idx) => (
-              <Card
-                key={`${product._id}-${idx}`}
-                className="overflow-hidden border border-[#E4E4E7] rounded-xl cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleProductClick(product)}
-              >
-                <CardContent className="p-3">
-                  <div className="w-full h-36 flex items-center justify-center">
-                    <img
-                      src={
-                        product.product.images[0] ||
-                        'https://media.istockphoto.com/id/184639599/photo/power-drill-with-large-bit.jpg?s=612x612&w=0&k=20&c=TJczKvZqLmWc5c5O6r86jelaUbYFLCZnwA_uWlhHOG0='
-                      }
-                      alt={product.product.name}
-                      className="max-h-full object-contain"
-                    />
-                  </div>
-                  <div className="mt-3">
-                    <span className="inline-flex items-center px-2.5 py-1 text-xs rounded-md bg-orange-50 text-orange-600 border border-orange-100">
-                      {getCategoryName(product.product.category_id)}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-base font-semibold leading-5 text-[#18181B] line-clamp-2">
-                    {product.product.name}
-                  </div>
-                  <div className="text-sm text-[#71717A] mt-1">
-                    {product.product.description ||
-                      product.product_barcode ||
-                      '—'}
-                  </div>
-                  <div className="mt-2 text-xl font-bold text-[#09090B]">
-                    {formatUsd(product.product.price + '')}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              {search
-                ? "Qidiruv bo'yicha mahsulot topilmadi"
-                : 'Mahsulotlar mavjud emas'}
-            </div>
-          )}
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product, idx) => (
+                <Card
+                  key={`${product._id}-${idx}`}
+                  className="overflow-hidden border border-[#E4E4E7] rounded-xl cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleProductClick(product)}
+                >
+                  <CardContent className="p-3">
+                    <div className="w-full h-36 flex items-center justify-center">
+                      <img
+                        src={
+                          product.product.images[0] ||
+                          'https://media.istockphoto.com/id/184639599/photo/power-drill-with-large-bit.jpg?s=612x612&w=0&k=20&c=TJczKvZqLmWc5c5O6r86jelaUbYFLCZnwA_uWlhHOG0='
+                        }
+                        alt={product.product.name}
+                        className="max-h-full object-contain"
+                      />
+                    </div>
+                    <div className="mt-3">
+                      <span className="inline-flex items-center px-2.5 py-1 text-xs rounded-md bg-orange-50 text-orange-600 border border-orange-100">
+                        {getCategoryName(product.product.category_id)}
+                      </span>
+                    </div>
+                    <div className="mt-2 text-base font-semibold leading-5 text-[#18181B] line-clamp-2">
+                      {product.product.name}
+                    </div>
+                    <div className="text-sm text-[#71717A] mt-1">
+                      {product.product.description ||
+                        product.product_barcode ||
+                        '—'}
+                    </div>
+                    <div className="mt-2 text-xl font-bold text-[#09090B]">
+                      {formatUsd(product.product.price + '')}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                {search
+                  ? "Qidiruv bo'yicha mahsulot topilmadi"
+                  : 'Mahsulotlar mavjud emas'}
+              </div>
+            )}
+          </div>
+
+          {/* Pagination for Grid View */}
         </div>
       )}
+      {getAllProductsData && (
+        <TablePagination
+          currentPage={getAllProductsData.current_page || 1}
+          totalPages={getAllProductsData.page_count || 1}
+          totalItems={getAllProductsData.after_filtering_count || 0}
+          itemsPerPage={getAllProductsData.current_limit || 10} // Set the number of items per page
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
+      )}
 
-      <ProductDetailsModal
+      <EnhancedProductDetailsModal
         isOpen={isModalOpen}
         onClose={closeModal}
         product={selectedProduct}
-      />
-
-      <PaginationComponent
-        page={page}
-        next_page={getAllProductsData?.next_page}
-        setPage={setPage}
       />
     </div>
   )

@@ -6,6 +6,7 @@ import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLocation } from '@/store/slice/Location.slice'
+import { resetSale } from '@/store/slice/Sale.slice' // Import the resetSale action
 import { useCreateSaleMutation } from '@/store/sales/salesApi'
 import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
@@ -73,6 +74,14 @@ export default function Create_selling() {
     dispatch(setLocation('Sotuv Yaratish'))
   }, [dispatch])
 
+  // Reset function to clear all data
+  const resetSaleData = () => {
+    setPayment(0)
+    setProducts([])
+    // Reset all Redux sale state to initial state
+    dispatch(resetSale())
+  }
+
   const validateSale = () => {
     const errors = []
 
@@ -128,19 +137,13 @@ export default function Create_selling() {
           toast.success(
             data.msg || data.message || 'Sotuv muvaffaqiyatli yaratildi!'
           )
+          // Reset all data including client, assistant, products, and payment
+          resetSaleData()
         },
         onError: (err) => {
           toast.error(err.error.msg)
         },
       })
-
-      // If all validations pass, you can proceed with the API call
-      try {
-        // Your API call logic here
-        toast.success('Sotuv muvaffaqiyatli yaratildi!')
-      } catch (error) {
-        toast.error((error as string) || 'Xatolik yuz berdi')
-      }
     }
   }
 

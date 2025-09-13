@@ -93,8 +93,8 @@ function SearchInput() {
           <thead className="text-[#71717A] text-sm border-b w-full flex justify-between sticky top-0 bg-white">
             <tr className="w-full grid grid-cols-5">
               <th className="px-7 py-3 text-left font-medium"></th>
-              <th className="px-7 py-3 text-left font-medium">Nomi</th>
-              <th className="px-7 py-3 text-left font-medium">Barcode</th>
+              <th className="px-7 py-3 text-center font-medium">Nomi</th>
+              <th className="px-7 py-3 text-center font-medium">Barcode</th>
               <th className="px-7 py-3 text-center font-medium">Narx</th>
               <th className="px-7 py-3 text-right font-medium">Soni</th>
             </tr>
@@ -118,7 +118,7 @@ function SearchInput() {
                       alt={p.product.name}
                     />
                   </td>
-                  <td className="px-7 py-3 text-left font-medium">
+                  <td className="px-7 py-3 text-center font-medium">
                     {p.product.name}
                   </td>
                   <td className="px-7 py-3 text-center font-medium">
