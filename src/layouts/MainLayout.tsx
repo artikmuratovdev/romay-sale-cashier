@@ -35,6 +35,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 import { Package, Store, UserRound } from 'lucide-react'
+import { clearAuthTokens } from '@/utils/auth'
 
 const HIDE_SIDEBAR_ROUTES = ['/auth/login']
 
@@ -116,7 +117,12 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
                   side="top"
                   className="w-[--radix-popper-anchor-width]"
                 >
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      clearAuthTokens()
+                      window.location.reload()
+                    }}
+                  >
                     <span>Sign out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
