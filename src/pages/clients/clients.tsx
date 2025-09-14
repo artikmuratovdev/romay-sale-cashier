@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom'
 import { TableSkeleton } from '../../components/ui/table-skeleton'
 import AddClientDialog from './AddClientDialog'
 import { useGetUser } from '@/hooks/useGetUser'
-import { SetLocation } from '@/hooks/setLocation'
 import { TablePagination } from '@/components/TablePagination'
 import { Input } from '@/components/ui/input'
 
@@ -60,8 +59,6 @@ function Clients() {
     setSearch(value)
     setCurrentPage(1) // Reset to first page when searching
   }
-
-  SetLocation('Mijozlar')
   const [open, setOpen] = useState(false)
 
   return (

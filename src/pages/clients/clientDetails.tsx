@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { SetLocation } from '@/hooks/setLocation'
 import { useGetOneClientQuery } from '@/store/clients/clients.api'
 import {
   useGetAllSalesQuery,
@@ -301,8 +300,6 @@ export default function ClientDetails() {
       items: [...prev.items, { product_id: '', quantity: 1 }],
     }))
   }
-
-  SetLocation('Mijozlar > Mijoz haqida')
 
   return (
     <div className="space-y-6">

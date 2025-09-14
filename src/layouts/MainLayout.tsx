@@ -35,8 +35,6 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 import { Package, Store, UserRound } from 'lucide-react'
-import { useSelector } from 'react-redux'
-import type { RootState } from '@/store/store'
 
 const HIDE_SIDEBAR_ROUTES = ['/auth/login']
 
@@ -48,8 +46,6 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   )
   const [selectedBranch, setSelectedBranch] = useState<string>('')
   const { pathname } = useLocation()
-
-  const location = useSelector((state: RootState) => state.location.location)
 
   const hideSidebar = HIDE_SIDEBAR_ROUTES.includes(pathname)
 
@@ -139,7 +135,6 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
                   orientation="vertical"
                   className="min-h-4 min-w-0.5"
                 />
-                <h1 className="text-md font-medium">{location}</h1>
               </div>
             </div>
             <div className="flex gap-4 items-center">

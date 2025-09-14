@@ -5,7 +5,6 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
 import { useDispatch, useSelector } from 'react-redux'
-import { setLocation } from '@/store/slice/Location.slice'
 import { resetSale } from '@/store/slice/Sale.slice' // Import the resetSale action
 import { useCreateSaleMutation } from '@/store/sales/salesApi'
 import { toast } from 'sonner'
@@ -69,10 +68,6 @@ export default function Create_selling() {
       setProducts(productsInfo)
     }
   }, [filteredProducts])
-
-  useEffect(() => {
-    dispatch(setLocation('Sotuv Yaratish'))
-  }, [dispatch])
 
   // Reset function to clear all data
   const resetSaleData = () => {
