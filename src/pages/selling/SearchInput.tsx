@@ -14,34 +14,77 @@ function SearchInput() {
   const [search, setSearch] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const me = useGetUser()
-  const { data: products } = useGetAllProductsQuery({
-    branch: me?.branch_id._id,
-  })
   const dispatch = useDispatch()
 
+  // Add selector for refetch trigger
+  const shouldRefetch = useSelector(
+    (state: RootState) => state.sale.shouldRefetch
+  )
+
+  const {
+    data: products,
+    refetch,
+    isLoading,
+    error,
+  } = useGetAllProductsQuery(
+    {
+      branch: me?.branch_id._id,
+    },
+    {
+      skip: !me?.branch_id._id, // Skip query if branch_id is not available
+    }
+  )
+
   useEffect(() => {
-    dispatch(addToAllProduct(products?.data as ProductWarehouseItem[]))
+    if (products?.data && Array.isArray(products.data)) {
+      dispatch(addToAllProduct(products.data as ProductWarehouseItem[]))
+    }
   }, [products, dispatch])
 
-  // Product name va barcode bo'yicha qidirish (bo'sh bo'lsa barcha mahsulotlar)
-  const allProducts = useSelector(
+  // Separate useEffect for refetch trigger
+  useEffect(() => {
+    if (me?.branch_id._id) {
+      refetch()
+    }
+  }, [shouldRefetch, refetch, me?.branch_id._id])
+
+  // Get all products from Redux
+  const allProductsFromRedux = useSelector(
     (state: RootState) => state.sale.allProducts
-  )?.filter((p) => {
-    const searchTerm = search.toLowerCase().trim()
+  )
 
-    // Agar qidiruv bo'sh bo'lsa, barcha mahsulotlarni ko'rsatish
-    if (!searchTerm) return true
+  // Get filtered products from Redux to exclude them from search results
+  const filteredProductsFromRedux = useSelector(
+    (state: RootState) => state.sale.filteredProducts
+  )
 
-    // Product name bo'yicha qidirish
-    const nameMatch = p.product.name.toLowerCase().includes(searchTerm)
+  // Filter products based on search term and exclude already selected products
+  const allProducts =
+    allProductsFromRedux?.filter((p) => {
+      // First check if product is already in filtered products (cart)
+      const isAlreadySelected = filteredProductsFromRedux.some(
+        (filtered) => filtered._id === p._id
+      )
 
-    // Barcode bo'yicha qidirish (agar barcode mavjud bo'lsa)
-    const barcodeMatch = p.product.barcode
-      ? p.product.barcode.toLowerCase().includes(searchTerm)
-      : false
+      if (isAlreadySelected) {
+        return false // Don't show products that are already selected
+      }
 
-    return nameMatch || barcodeMatch
-  })
+      const searchTerm = search.toLowerCase().trim()
+
+      // If no search term, show all available products
+      if (!searchTerm) return true
+
+      // Search by product name
+      const nameMatch = p.product?.name?.toLowerCase().includes(searchTerm)
+
+      // Search by barcode if it exists
+      const barcodeMatch = p.product?.barcode
+        ? p.product.barcode.toLowerCase().includes(searchTerm)
+        : false
+
+      return nameMatch || barcodeMatch
+    }) || []
 
   const handleProductSelect = (product: ProductWarehouseItem) => {
     if (product.product_count <= 0) {
@@ -56,7 +99,6 @@ function SearchInput() {
     }
   }
 
-  // Input ni focus qilish uchun function
   const focusInput = () => {
     if (inputRef.current) {
       inputRef.current.focus()
@@ -65,6 +107,46 @@ function SearchInput() {
 
   const handleBarcodeClick = () => {
     focusInput()
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="w-full relative">
+        <div className="relative w-full">
+          <Input
+            placeholder="Mahsulotlar yuklanmoqda..."
+            className="pr-10"
+            disabled
+          />
+          <ScanBarcode
+            size={24}
+            className="absolute right-2 top-2 cursor-pointer opacity-50"
+            color="#71717A"
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full relative">
+        <div className="relative w-full">
+          <Input
+            placeholder="Xatolik yuz berdi. Qayta urinib ko'ring..."
+            className="pr-10"
+            disabled
+          />
+          <ScanBarcode
+            size={24}
+            className="absolute right-2 top-2 cursor-pointer opacity-50"
+            color="#71717A"
+          />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -105,40 +187,46 @@ function SearchInput() {
         <div className="max-h-80 overflow-y-auto">
           <table className="w-full">
             <tbody className="text-[#71717A] text-sm bg-white">
-              {allProducts?.map((p) => (
-                <tr
-                  key={p._id}
-                  className="w-full grid grid-cols-5 cursor-pointer hover:bg-gray-50 border-b border-gray-100"
-                  onMouseDown={() => handleProductSelect(p)}
-                >
-                  <td className="px-7 py-3 text-left font-medium">
-                    <img
-                      className="aspect-square w-10 h-10 object-cover rounded"
-                      src={p.product.images[0]}
-                      alt={p.product.name}
-                    />
-                  </td>
-                  <td className="px-7 py-3 text-center font-medium">
-                    {p.product.name}
-                  </td>
-                  <td className="px-7 py-3 text-center font-medium">
-                    {p.product.barcode || '-'}
-                  </td>
-                  <td className="px-7 py-3 text-center font-medium">
-                    {p.product.price}
-                  </td>
-                  <td className="px-7 py-3 text-right font-medium">
-                    {p.product_count}
-                  </td>
-                </tr>
-              ))}
-              {allProducts?.length === 0 && search && (
+              {allProducts?.length > 0 ? (
+                allProducts.map((p) => (
+                  <tr
+                    key={p._id}
+                    className="w-full grid grid-cols-5 cursor-pointer hover:bg-gray-50 border-b border-gray-100"
+                    onMouseDown={() => handleProductSelect(p)}
+                  >
+                    <td className="px-7 py-3 text-left font-medium">
+                      <img
+                        className="aspect-square w-10 h-10 object-cover rounded"
+                        src={p.product?.images?.[0] || '/placeholder-image.png'}
+                        alt={p.product?.name || 'Product'}
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-image.png'
+                        }}
+                      />
+                    </td>
+                    <td className="px-7 py-3 text-center font-medium">
+                      {p.product?.name || 'N/A'}
+                    </td>
+                    <td className="px-7 py-3 text-center font-medium">
+                      {p.product?.barcode || '-'}
+                    </td>
+                    <td className="px-7 py-3 text-center font-medium">
+                      {p.product?.price || 0}
+                    </td>
+                    <td className="px-7 py-3 text-right font-medium">
+                      {p.product_count || 0}
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr className="w-full">
                   <td
                     colSpan={5}
                     className="px-7 py-6 text-center text-gray-500"
                   >
-                    Hech qanday mahsulot topilmadi
+                    {search
+                      ? 'Hech qanday mahsulot topilmadi'
+                      : 'Mahsulotlar mavjud emas'}
                   </td>
                 </tr>
               )}

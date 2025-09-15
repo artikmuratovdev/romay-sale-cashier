@@ -114,17 +114,47 @@ export default function ClientDetails() {
     salesAssistantUsername: '',
   })
 
-  const items =
-    client_items?.data
-      ?.map((item) => item.items?.map((item) => item))
-      ?.flat() || []
-
-  console.log('Items:', items)
-  console.log('Products:', products)
-
   // Helper function to get product by ID
   const getProductById = (productId: string) => {
     return products?.data?.find((product) => product._id === productId)
+  }
+
+  // Helper function to get available products for selection
+  const getAvailableProducts = (currentItemIndex?: number) => {
+    if (!products?.data) return []
+
+    // Get all selected product IDs except for the current item being edited
+    const selectedProductIds = editData.items
+      .map((item, index) => {
+        // Don't include current item index and don't include empty product IDs
+        if (currentItemIndex !== undefined && index === currentItemIndex) {
+          return null
+        }
+        return item.product_id || null
+      })
+      .filter((id): id is string => Boolean(id)) // Type-safe filter for non-empty strings
+
+    console.log('Selected Product IDs:', selectedProductIds)
+    console.log('Current Item Index:', currentItemIndex)
+
+    // Filter out selected products and products with no stock
+    const availableProducts = products.data.filter((product) => {
+      const hasStock = product.product_count > 0
+      const isNotSelected = !selectedProductIds.includes(product._id)
+
+      console.log(
+        `Product ${product.product?.name}: hasStock=${hasStock}, isNotSelected=${isNotSelected}`
+      )
+
+      return hasStock && isNotSelected
+    })
+
+    console.log(
+      'Available Products:',
+      availableProducts.map((p) => p.product?.name)
+    )
+
+    return availableProducts
   }
 
   // Regex to handle number input without leading zeros
@@ -229,6 +259,14 @@ export default function ClientDetails() {
       return
     }
 
+    // Check for duplicate products
+    const productIds = editData.items.map((item) => item.product_id)
+    const uniqueProductIds = new Set(productIds)
+    if (productIds.length !== uniqueProductIds.size) {
+      toast.error("Bir xil mahsulotni ikki marta tanlab bo'lmaydi")
+      return
+    }
+
     const updatePayload: UpdateSaleSchema = {
       client_id: editData.client_id,
       sales_assistant_id: editData.sales_assistant_id,
@@ -279,6 +317,16 @@ export default function ClientDetails() {
   }
 
   const updateItemProduct = (index: number, productId: string) => {
+    // Double check that this product isn't already selected
+    const isAlreadySelected = editData.items.some(
+      (item, i) => i !== index && item.product_id === productId
+    )
+
+    if (isAlreadySelected) {
+      toast.error('Bu mahsulot allaqachon tanlangan')
+      return
+    }
+
     setEditData((prev) => ({
       ...prev,
       items: prev.items.map((item, i) =>
@@ -513,15 +561,28 @@ export default function ClientDetails() {
                   size="sm"
                   onClick={addNewItem}
                   className="flex items-center gap-2"
+                  disabled={getAvailableProducts().length === 0}
                 >
                   <Plus className="h-4 w-4" />
                   Mahsulot qo'shish
                 </Button>
               </div>
 
+              {getAvailableProducts().length === 0 &&
+                editData.items.length > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-800">
+                      Barcha mavjud mahsulotlar tanlangan. Yangi mahsulot
+                      qo'shish uchun biror mahsulotni o'chiring.
+                    </p>
+                  </div>
+                )}
+
               <div className="space-y-3">
                 {editData.items.map((item, index) => {
                   const product = getProductById(item.product_id)
+                  const availableProducts = getAvailableProducts(index)
+
                   return (
                     <div
                       key={index}
@@ -531,9 +592,21 @@ export default function ClientDetails() {
                         <Label className="text-sm font-medium">Mahsulot</Label>
                         <Select
                           value={item.product_id}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => {
+                            // Check if this product is already selected in another item
+                            const isAlreadySelected = editData.items.some(
+                              (otherItem, otherIndex) =>
+                                otherIndex !== index &&
+                                otherItem.product_id === value
+                            )
+
+                            if (isAlreadySelected) {
+                              toast.error('Bu mahsulot allaqachon tanlangan')
+                              return
+                            }
+
                             updateItemProduct(index, value)
-                          }
+                          }}
                         >
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="Mahsulot tanlang">
@@ -558,43 +631,88 @@ export default function ClientDetails() {
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {products?.data?.map((productItem) => (
-                              <>
-                                {productItem.product_count ? (
-                                  <SelectItem
-                                    key={productItem._id}
-                                    value={productItem._id}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      {productItem.product?.images?.[0] && (
-                                        <img
-                                          src={productItem.product.images[0]}
-                                          alt={productItem.product.name}
-                                          className="w-8 h-8 rounded object-cover"
-                                          onError={(e) => {
-                                            const img =
-                                              e.target as HTMLImageElement
-                                            img.style.display = 'none'
-                                          }}
-                                        />
-                                      )}
-                                      <div className="flex flex-col">
-                                        <span className="font-medium">
-                                          {productItem.product?.name || 'N/A'}
-                                        </span>
-                                        <span className="text-xs text-gray-500">
-                                          {money(productItem.product?.price)}{' '}
-                                          {productItem.product?.currency ||
-                                            "so'm"}
-                                        </span>
-                                      </div>
+                            {/* Always show the currently selected product if it exists */}
+                            {product && (
+                              <SelectItem value={product._id}>
+                                <div className="flex items-center gap-2">
+                                  {product.product?.images?.[0] && (
+                                    <img
+                                      src={product.product.images[0]}
+                                      alt={product.product.name}
+                                      className="w-8 h-8 rounded object-cover"
+                                      onError={(e) => {
+                                        const img = e.target as HTMLImageElement
+                                        img.style.display = 'none'
+                                      }}
+                                    />
+                                  )}
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">
+                                      {product.product?.name || 'N/A'}
+                                      <span className="text-xs text-green-600 ml-1">
+                                        (Hozirgi)
+                                      </span>
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {money(product.product?.price)}{' '}
+                                      {product.product?.currency || "so'm"}
+                                    </span>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            )}
+
+                            {/* Separator if current product exists */}
+                            {product && availableProducts.length > 0 && (
+                              <div className="border-t border-gray-200 my-1"></div>
+                            )}
+
+                            {/* Show available products */}
+                            {availableProducts.map((productItem) => {
+                              if (
+                                !productItem.product ||
+                                productItem._id === product?._id
+                              )
+                                return null
+                              return (
+                                <SelectItem
+                                  key={productItem._id}
+                                  value={productItem._id}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {productItem.product?.images?.[0] && (
+                                      <img
+                                        src={productItem.product.images[0]}
+                                        alt={productItem.product.name}
+                                        className="w-8 h-8 rounded object-cover"
+                                        onError={(e) => {
+                                          const img =
+                                            e.target as HTMLImageElement
+                                          img.style.display = 'none'
+                                        }}
+                                      />
+                                    )}
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">
+                                        {productItem.product?.name || 'N/A'}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        {money(productItem.product?.price)}{' '}
+                                        {productItem.product?.currency ||
+                                          "so'm"}{' '}
+                                        • Soni: {productItem.product_count}
+                                      </span>
                                     </div>
-                                  </SelectItem>
-                                ) : (
-                                  ''
-                                )}
-                              </>
-                            ))}
+                                  </div>
+                                </SelectItem>
+                              )
+                            })}
+
+                            {availableProducts.length === 0 && !product && (
+                              <div className="px-2 py-1 text-sm text-gray-500">
+                                Mavjud mahsulotlar yo'q
+                              </div>
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -663,6 +781,7 @@ export default function ClientDetails() {
                     variant="outline"
                     onClick={addNewItem}
                     className="mt-2"
+                    disabled={getAvailableProducts().length === 0}
                   >
                     Birinchi mahsulotni qo'shing
                   </Button>

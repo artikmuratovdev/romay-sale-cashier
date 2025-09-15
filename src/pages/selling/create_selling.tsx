@@ -5,7 +5,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
 import { useDispatch, useSelector } from 'react-redux'
-import { resetSale } from '@/store/slice/Sale.slice' // Import the resetSale action
+import { resetSale, triggerRefetch } from '@/store/slice/Sale.slice' // Import triggerRefetch
 import { useCreateSaleMutation } from '@/store/sales/salesApi'
 import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
@@ -134,6 +134,8 @@ export default function Create_selling() {
           )
           // Reset all data including client, assistant, products, and payment
           resetSaleData()
+          // Trigger refetch for SearchInput
+          dispatch(triggerRefetch())
         },
         onError: (err) => {
           toast.error(err.error.msg)

@@ -10,6 +10,7 @@ type State = {
   filteredProducts: SaleProductItem[]
   client: string | null
   assistant: string | null
+  shouldRefetch: boolean
 }
 
 const initialState: State = {
@@ -17,6 +18,7 @@ const initialState: State = {
   filteredProducts: [],
   client: null,
   assistant: null,
+  shouldRefetch: false,
 }
 
 const SaleSlice = createSlice({
@@ -90,10 +92,10 @@ const SaleSlice = createSlice({
     },
 
     updateQty: (state, action: PayloadAction<{ id: string; qty: number }>) => {
-      const { id } = action.payload
+      const { id, qty } = action.payload
 
       state.filteredProducts = state.filteredProducts.map((p) =>
-        p._id === id ? { ...p } : p
+        p._id === id ? { ...p, qty } : p
       )
     },
 
@@ -124,6 +126,10 @@ const SaleSlice = createSlice({
       state.assistant = null
     },
 
+    triggerRefetch: (state) => {
+      state.shouldRefetch = !state.shouldRefetch
+    },
+
     resetSale: () => {
       return initialState
     },
@@ -142,6 +148,7 @@ export const {
   setAssistant,
   clearClient,
   clearAssistant,
+  triggerRefetch,
   resetSale,
 } = SaleSlice.actions
 
