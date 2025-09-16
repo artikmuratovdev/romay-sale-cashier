@@ -64,6 +64,7 @@ interface GetAllSalesReq {
   date_to?: string
   page?: number
   limit?: number
+  search?: string
 }
 
 interface GetAllSalesRes {

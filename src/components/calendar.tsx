@@ -47,8 +47,6 @@ export function Calendar22({
             mode="single"
             selected={date}
             captionLayout="dropdown"
-            // Instead of arrow indicator, need calendar Icon
-
             onSelect={(date) => {
               setDate(date)
               setOpen(false)
