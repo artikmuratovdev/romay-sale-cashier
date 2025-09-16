@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Input } from '../../components/ui/input'
-import { Check, Printer } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
@@ -306,9 +306,7 @@ export default function Create_selling() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Button variant={'secondary'}>
-                <Printer size={16} className="mr-2" /> Print
-              </Button>
+              <span></span>
               <Button className="bg-green-700 text-white" onClick={sendItems}>
                 <Check size={16} className="mr-2" /> {"To'lov qilish"}
               </Button>

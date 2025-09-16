@@ -24,12 +24,19 @@ export default function LoginPage() {
   const [loginUser, { isLoading }] = useLoginMutation()
 
   const handleRequets = useHandleRequest()
-
+  const isDev = process.env.NODE_ENV === 'development'
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>()
+  } = useForm<LoginFormData>({
+    defaultValues: isDev
+      ? {
+          phone: '+998900067734',
+          password: 'Password123!',
+        }
+      : {},
+  })
 
   const onSubmit = async (data: LoginFormData) => {
     await handleRequets({

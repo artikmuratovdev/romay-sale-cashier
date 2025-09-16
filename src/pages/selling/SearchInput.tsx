@@ -110,32 +110,18 @@ function SearchInput() {
   }
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || error) {
     return (
       <div className="w-full relative">
         <div className="relative w-full">
           <Input
-            placeholder="Mahsulotlar yuklanmoqda..."
-            className="pr-10"
-            disabled
-          />
-          <ScanBarcode
-            size={24}
-            className="absolute right-2 top-2 cursor-pointer opacity-50"
-            color="#71717A"
-          />
-        </div>
-      </div>
-    )
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="w-full relative">
-        <div className="relative w-full">
-          <Input
-            placeholder="Xatolik yuz berdi. Qayta urinib ko'ring..."
+            placeholder={
+              error
+                ? "Xatolik yuz berdi. Qayta urinib ko'ring..."
+                : isLoading
+                  ? 'Mahsulotlar yuklanmoqda...'
+                  : undefined
+            }
             className="pr-10"
             disabled
           />
@@ -213,7 +199,9 @@ function SearchInput() {
                     <td className="px-7 py-3 text-center font-medium">
                       {p.product?.price || 0}
                     </td>
-                    <td className="px-7 py-3 text-right font-medium">
+                    <td
+                      className={`px-7 py-3 ${p.product_count === 0 && 'text-red-500'} text-right font-medium`}
+                    >
                       {p.product_count || 0}
                     </td>
                   </tr>

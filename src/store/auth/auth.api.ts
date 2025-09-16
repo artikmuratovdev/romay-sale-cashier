@@ -1,10 +1,14 @@
 import baseApi from '../api'
-import { setAuthTokens, clearAuthTokens } from '@/utils/auth'
+import { setAuthTokens, getAuthToken } from '@/utils/auth'
 import type { LoginRequest, LoginResponse, UserResponse } from './auth'
 
-type ApiError = {
+interface ApiError {
   status: number
-  data: unknown
+  data: {
+    message?: string
+    msg?: string
+    error?: string
+  }
 }
 
 const authApi = baseApi.injectEndpoints({
@@ -18,7 +22,16 @@ const authApi = baseApi.injectEndpoints({
       async onQueryStarted(_, { queryFulfilled }) {
         try {
           const { data } = await queryFulfilled
-          if ('access_token' in data && 'refresh_token' in data) {
+
+          // Tokenlar mavjud emasligini tekshiramiz
+          const existingToken = getAuthToken()
+
+          if (
+            data &&
+            'access_token' in data &&
+            'refresh_token' in data &&
+            !existingToken
+          ) {
             setAuthTokens({
               access_token: data.access_token as string,
               refresh_token: data.refresh_token as string,
@@ -26,7 +39,10 @@ const authApi = baseApi.injectEndpoints({
           }
         } catch (error: unknown) {
           console.error('Login failed:', (error as ApiError)?.data || error)
-          clearAuthTokens()
+          // const apiError = error as ApiError
+          // if (apiError?.status === 401 || apiError?.status === 403) {
+          //   clearAuthTokens()
+          // }
         }
       },
       invalidatesTags: ['user'],
@@ -37,7 +53,7 @@ const authApi = baseApi.injectEndpoints({
         method: 'GET',
       }),
       providesTags: ['user'],
-      onQueryStarted: async (_, { queryFulfilled }) => {
+      async onQueryStarted(_, { queryFulfilled }) {
         try {
           await queryFulfilled
         } catch (error: unknown) {
@@ -45,7 +61,10 @@ const authApi = baseApi.injectEndpoints({
             'User fetch failed:',
             (error as ApiError)?.data || error
           )
-          clearAuthTokens()
+          // const apiError = error as ApiError
+          // if (apiError?.status === 401 || apiError?.status === 403) {
+          //   clearAuthTokens()
+          // }
         }
       },
     }),
