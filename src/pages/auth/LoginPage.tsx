@@ -12,6 +12,7 @@ import { useHandleRequest } from '@/hooks/use-handle-request'
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 type LoginFormData = {
   phone: string
@@ -37,10 +38,11 @@ export default function LoginPage() {
         return result
       },
       onSuccess: () => {
+        toast.success('Tizimga muvaffaqiyatli kirdingiz')
         window.location.href = '/selling'
       },
-      onError: (error) => {
-        console.log(error)
+      onError: (err) => {
+        toast.error(err.error.msg || 'Login qilishda xatolik yuz berdi')
       },
     })
   }

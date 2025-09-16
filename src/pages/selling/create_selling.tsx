@@ -5,7 +5,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
 import { useDispatch, useSelector } from 'react-redux'
-import { resetSale, triggerRefetch } from '@/store/slice/Sale.slice' // Import triggerRefetch
+import { resetSaleData, triggerRefetch } from '@/store/slice/Sale.slice'
 import { useCreateSaleMutation } from '@/store/sales/salesApi'
 import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
@@ -26,6 +26,14 @@ export type Product = {
   barcode: string
 }
 
+// Validation errors state type
+type ValidationErrors = {
+  products: boolean
+  client: boolean
+  assistant: boolean
+  payment: boolean
+}
+
 export default function Create_selling() {
   const [products, setProducts] = useState<Product[]>([])
   const dispatch = useDispatch()
@@ -37,6 +45,14 @@ export default function Create_selling() {
   const AssistantId = useSelector((state: RootState) => state.sale.assistant)
 
   const [payment, setPayment] = useState(0)
+
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({
+    products: false,
+    client: false,
+    assistant: false,
+    payment: false,
+  })
 
   const [date, setDate] = useState(new Date())
 
@@ -69,46 +85,62 @@ export default function Create_selling() {
     }
   }, [filteredProducts])
 
-  // Reset function to clear all data
-  const resetSaleData = () => {
+  const resetSaleDataLocal = () => {
     setPayment(0)
     setProducts([])
-    // Reset all Redux sale state to initial state
-    dispatch(resetSale())
+    setValidationErrors({
+      products: false,
+      client: false,
+      assistant: false,
+      payment: false,
+    })
+    dispatch(resetSaleData())
   }
 
-  const validateSale = () => {
-    const errors = []
-
-    // Check if there are items
-    if (!filteredProducts || filteredProducts.length === 0) {
-      errors.push('Mahsulotlar')
-    }
-
-    // Check if client is selected
-    if (!ClientId) {
-      errors.push('Mijoz')
-    }
-
-    // Check if assistant is selected
-    if (!AssistantId) {
-      errors.push('Assistent')
-    }
-
-    // Check if payment amount is provided
-    if (payment <= 0) {
-      errors.push("To'lov miqdori")
+  const validateSale = (): ValidationErrors => {
+    const errors: ValidationErrors = {
+      products: !filteredProducts || filteredProducts.length === 0,
+      client: !ClientId,
+      assistant: !AssistantId,
+      payment: payment <= 0,
     }
 
     return errors
   }
 
-  const sendItems = async () => {
-    const validationErrors = validateSale()
+  // Clear specific validation error when user starts fixing it
+  useEffect(() => {
+    if (filteredProducts && filteredProducts.length > 0) {
+      setValidationErrors((prev) => ({ ...prev, products: false }))
+    }
+  }, [filteredProducts])
 
-    if (validationErrors.length > 0) {
-      const errorMessage = `Quyidagi maydonlarni to'ldiring: ${validationErrors.join(', ')}`
-      toast.error(errorMessage)
+  useEffect(() => {
+    if (ClientId) {
+      setValidationErrors((prev) => ({ ...prev, client: false }))
+    }
+  }, [ClientId])
+
+  useEffect(() => {
+    if (AssistantId) {
+      setValidationErrors((prev) => ({ ...prev, assistant: false }))
+    }
+  }, [AssistantId])
+
+  useEffect(() => {
+    if (payment > 0) {
+      setValidationErrors((prev) => ({ ...prev, payment: false }))
+    }
+  }, [payment])
+
+  const sendItems = async () => {
+    const errors = validateSale()
+
+    // Check if there are any validation errors
+    const hasErrors = Object.values(errors).some((error) => error)
+
+    if (hasErrors) {
+      setValidationErrors(errors)
       return
     }
 
@@ -132,13 +164,11 @@ export default function Create_selling() {
           toast.success(
             data.msg || data.message || 'Sotuv muvaffaqiyatli yaratildi!'
           )
-          // Reset all data including client, assistant, products, and payment
-          resetSaleData()
-          // Trigger refetch for SearchInput
+          resetSaleDataLocal()
           dispatch(triggerRefetch())
         },
         onError: (err) => {
-          toast.error(err.error.msg)
+          toast.error(err.data.error.msg)
         },
       })
     }
@@ -152,12 +182,16 @@ export default function Create_selling() {
 
       {/* If products exist */}
       {products.length > 0 ? (
-        <div className="border border-[#E4E4E7] rounded-lg overflow-hidden">
+        <div
+          className={`border rounded-lg overflow-hidden ${
+            validationErrors.products ? 'border-red-500' : 'border-[#E4E4E7]'
+          }`}
+        >
           <Sale_Table />
         </div>
       ) : (
         // Your empty state here
-        <Card>
+        <Card className={validationErrors.products ? 'border-red-500' : ''}>
           <div className="py-7 flex items-center justify-center flex-col">
             <div className="mb-4">
               <img src="/empty.svg" alt="" />
@@ -168,6 +202,11 @@ export default function Create_selling() {
             <p className="text-[14px] text-slate-600">
               Mahsulotlar kiritilishi bilan bu yerda ko'rinadi
             </p>
+            {validationErrors.products && (
+              <p className="text-red-500 text-sm mt-2">
+                Kamida bitta mahsulot qo'shing
+              </p>
+            )}
           </div>
         </Card>
       )}
@@ -177,24 +216,56 @@ export default function Create_selling() {
         <Card>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label>Mijoz</Label>
-              <ClientCombobox />
-              <p className="text-[14px] text-[#71717A]">
-                Qarz bo'lmasa majburiy emas
+              <Label className={validationErrors.client ? 'text-red-500' : ''}>
+                Mijoz {validationErrors.client && '*'}
+              </Label>
+              <div
+                className={
+                  validationErrors.client
+                    ? 'border border-red-500 rounded-md'
+                    : ''
+                }
+              >
+                <ClientCombobox />
+              </div>
+              <p
+                className={`text-[14px] ${validationErrors.client ? 'text-red-500' : 'text-[#71717A]'}`}
+              >
+                {validationErrors.client && 'Mijozni tanlang'}
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Label>Assistent</Label>
-              <AssistantCombobox />
-              <p className="text-[14px] text-[#71717A]">
-                Assistent tanlang (ixtiyoriy)
+              <Label
+                className={validationErrors.assistant ? 'text-red-500' : ''}
+              >
+                Assistent {validationErrors.assistant && '*'}
+              </Label>
+              <div
+                className={
+                  validationErrors.assistant
+                    ? 'border border-red-500 rounded-md'
+                    : ''
+                }
+              >
+                <AssistantCombobox />
+              </div>
+              <p
+                className={`text-[14px] ${validationErrors.assistant ? 'text-red-500' : 'text-[#71717A]'}`}
+              >
+                {validationErrors.assistant && 'Assentni tanlang'}
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Label>Naqd</Label>
+              <Label className={validationErrors.payment ? 'text-red-500' : ''}>
+                Naqd {validationErrors.payment && '*'}
+              </Label>
               <div className="relative">
                 <Input
-                  className="py-2 px-3 pr-10"
+                  className={`py-2 px-3 pr-10 ${
+                    validationErrors.payment
+                      ? 'border-red-500 focus-visible:ring-red-500'
+                      : ''
+                  }`}
                   placeholder="0"
                   type="number"
                   value={payment === 0 ? '' : payment}
@@ -206,6 +277,11 @@ export default function Create_selling() {
                   UZS
                 </span>
               </div>
+              {validationErrors.payment && (
+                <p className="text-red-500 text-[14px]">
+                  To'lov miqdorini kiriting
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

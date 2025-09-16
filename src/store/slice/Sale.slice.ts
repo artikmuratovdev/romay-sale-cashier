@@ -45,7 +45,7 @@ const SaleSlice = createSlice({
         state.filteredProducts.push(productWithQty)
       }
 
-      // Remove from all products to avoid duplication
+      // Remove from all products to avoid duplication in search
       state.allProducts = state.allProducts.filter(
         (p) => p._id !== action.payload._id
       )
@@ -66,7 +66,7 @@ const SaleSlice = createSlice({
 
       if (removedProduct) {
         // Remove qty property and add back to all products
-        const { ...productWithoutQty } = removedProduct
+        const productWithoutQty = { ...removedProduct }
         state.allProducts.push(productWithoutQty)
       }
     },
@@ -83,8 +83,6 @@ const SaleSlice = createSlice({
           if (p.qty > 1) {
             return { ...p, qty: p.qty - 1 }
           }
-          // If qty becomes 0, we could either remove it or keep it at 1
-          // Keeping it at 1 for now, but you can change this behavior
           return { ...p, qty: 1 }
         }
         return p
@@ -106,8 +104,6 @@ const SaleSlice = createSlice({
       )
       state.allProducts = [...state.allProducts, ...productsWithoutQty]
       state.filteredProducts = []
-      state.client = null
-      state.assistant = null
     },
 
     setClient: (state, action: PayloadAction<string | null>) => {
@@ -130,6 +126,21 @@ const SaleSlice = createSlice({
       state.shouldRefetch = !state.shouldRefetch
     },
 
+    // Yangi action - faqat sotuv ma'lumotlarini tozalash (mahsulotlarni saqlab qolish)
+    resetSaleData: (state) => {
+      // Filtered products ni all products ga qaytarish
+      const productsWithoutQty = state.filteredProducts.map(
+        ({ ...product }) => product
+      )
+      state.allProducts = [...state.allProducts, ...productsWithoutQty]
+
+      // Sotuv ma'lumotlarini tozalash
+      state.filteredProducts = []
+      state.client = null
+      state.assistant = null
+    },
+
+    // Eski resetSale ni saqlab qolish (agar kerak bo'lsa)
     resetSale: () => {
       return initialState
     },
@@ -150,6 +161,7 @@ export const {
   clearAssistant,
   triggerRefetch,
   resetSale,
+  resetSaleData, // Yangi action export qilish
 } = SaleSlice.actions
 
 export default SaleSlice.reducer
