@@ -29,7 +29,7 @@ type Props = {
 
 const addClientSchema = z.object({
   username: z.string().min(2, 'Ism kamida 2 ta belgidan iborat bo‘lishi kerak'),
-  description: z.string().optional(),
+  description: z.string().min(2, 'Tavsifni kiriting'),
   phone: z
     .string()
     .regex(

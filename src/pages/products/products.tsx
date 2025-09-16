@@ -19,7 +19,7 @@ function ProductPage() {
     branch: me?.branch_id._id,
     page,
     limit,
-    search, // Add search to the query if your API supports it
+    search,
   })
 
   const formatUsd = (value: string) => {
