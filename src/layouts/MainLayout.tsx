@@ -1,17 +1,9 @@
-import { Calendar22 } from '@/components/calendar'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import {
   Sidebar,
@@ -28,10 +20,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { useGetAllBranchesQuery } from '@/store/branch/branch.api'
-import { useGetRole } from '@/hooks/use-get-role'
 import { ChevronUp, User2 } from 'lucide-react'
-import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 import { Package, Store, UserRound } from 'lucide-react'
@@ -40,12 +29,6 @@ import { clearAuthTokens } from '@/utils/auth'
 const HIDE_SIDEBAR_ROUTES = ['/auth/login']
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const role = useGetRole()
-  const { data: { data: branches } = {} } = useGetAllBranchesQuery(
-    {},
-    { skip: role !== 'ceo' }
-  )
-  const [selectedBranch, setSelectedBranch] = useState<string>('')
   const { pathname } = useLocation()
 
   const hideSidebar = HIDE_SIDEBAR_ROUTES.includes(pathname)
@@ -142,26 +125,6 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
                   className="min-h-4 min-w-0.5"
                 />
               </div>
-            </div>
-            <div className="flex gap-4 items-center">
-              <Calendar22 />
-              <Select
-                onValueChange={(value) => {
-                  setSelectedBranch(value)
-                }}
-                value={selectedBranch}
-              >
-                <SelectTrigger className="min-w-[150px]">
-                  <SelectValue placeholder="Barch Filiallar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {branches?.map((branch) => (
-                    <SelectItem key={branch._id} value={branch._id}>
-                      {branch.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </header>

@@ -101,7 +101,6 @@ function ProductPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-[30px] font-semibold text-[#09090B]">
           Mahsulotlar
@@ -130,19 +129,19 @@ function ProductPage() {
 
       {/* Toolbar */}
       <div className="flex items-center gap-4">
-        <div className="relative">
+        <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9 w-[400px]"
+            className="pl-9 w-full"
             placeholder="Mahsulot nomi, bar-kod, kategoriya bo'yicha qidirish..."
           />
         </div>
       </div>
 
       {view === 'list' ? (
-        <div className="border border-[#E4E4E7] rounded-lg overflow-hidden">
+        <div className="border border-[#E4E4E7] rounded-lg overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
               <tr>
@@ -284,8 +283,6 @@ function ProductPage() {
               </div>
             )}
           </div>
-
-          {/* Pagination for Grid View */}
         </div>
       )}
       {getAllProductsData && (
@@ -293,7 +290,7 @@ function ProductPage() {
           currentPage={getAllProductsData.current_page || 1}
           totalPages={getAllProductsData.page_count || 1}
           totalItems={getAllProductsData.after_filtering_count || 0}
-          itemsPerPage={getAllProductsData.current_limit || 10} // Set the number of items per page
+          itemsPerPage={getAllProductsData.current_limit || 10}
           onPageChange={handlePageChange}
           onItemsPerPageChange={handleItemsPerPageChange}
         />

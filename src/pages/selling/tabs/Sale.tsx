@@ -3,29 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useGetUser } from '@/hooks/useGetUser'
 import { useGetAllSalesQuery } from '@/store/sales/salesApi'
-import { format } from 'date-fns'
+import { addDays, format } from 'date-fns'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import DatePicker from '../components/DatePicker'
-
-function money(
-  n: number | undefined | null,
-  sign: 'neutral' | 'debt' | 'pos' = 'neutral'
-) {
-  // Handle null, undefined, or invalid number cases
-  if (n === null || n === undefined || isNaN(n)) {
-    n = 0
-  }
-
-  const text = n.toLocaleString('uz-UZ')
-  const cls =
-    sign === 'debt'
-      ? 'text-rose-600'
-      : sign === 'pos'
-        ? 'text-emerald-600'
-        : 'text-[#18181B]'
-  return <span className={cls}>{text}</span>
-}
+import money from '../components/money'
 
 const Sale = () => {
   const me = useGetUser()
@@ -60,31 +42,53 @@ const Sale = () => {
 
   return (
     <div className="py-4">
-      <div className="mb-4 grid grid-cols-6 items-center gap-4">
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="col-span-4"
-          placeholder="Qidiruv..."
-        />
-        <DatePicker
-          onDateRangeChange={(range) => {
-            if (!range) {
-              setDateRange({ from: undefined, to: undefined })
-              return
-            }
-            setDateRange({
-              from: range.from ? format(range.from, 'yyyy-MM-dd') : undefined,
-              to: range.to ? format(range.to, 'yyyy-MM-dd') : undefined,
-            })
-          }}
-          className="col-span-2"
-        />
-        <Button className="col-span-1 bg-blue-600 text-lg py-5">
-          <Link to={'create-sale'}>Buyurtma yaratish</Link>
-        </Button>
+      <div className="mb-6 space-y-4">
+        {/* Title and Create Button */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl sm:text-[26px] max-sm:mx-auto lg:text-[30px] font-semibold text-[#09090B]">
+            Buyurtmalar
+          </h1>
+          <Link to={'create-sale'} className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto hover:bg-white hover:text-blue-600 border-2 border-transparent bg-blue-600 text-sm sm:text-base lg:text-lg py-2.5 sm:py-3 px-4">
+              Buyurtma yaratish
+            </Button>
+          </Link>
+        </div>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <DatePicker
+            className="w-full"
+            onDateRangeChange={(range) => {
+              if (!range) {
+                setDateRange({ from: undefined, to: undefined })
+                return
+              }
+              if (range?.from && range.from === range.to) {
+                const nextDay = format(addDays(range.from, 1), 'yyyy-MM-dd')
+                setDateRange({
+                  from: format(range.from, 'yyyy-MM-dd'),
+                  to: nextDay,
+                })
+                return
+              }
+              setDateRange({
+                from: range.from ? format(range.from, 'yyyy-MM-dd') : undefined,
+                to: range.to ? format(range.to, 'yyyy-MM-dd') : undefined,
+              })
+            }}
+          />
+          <div className="sm:col-span-1 lg:col-span-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full"
+              placeholder="Qidiruv..."
+            />
+          </div>
+        </div>
       </div>
-      <div>
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
             <tr>
@@ -95,13 +99,11 @@ const Sale = () => {
                 Buyurtma raqami
               </th>
               <th className="px-6 py-3 text-center font-medium">Mijoz</th>
+              <th className="px-6 py-3 text-center font-medium">Sotuvchi</th>
+              <th className="px-6 py-3 text-center font-medium">Qarzdorlik</th>
               <th className="px-6 py-3 text-center font-medium">
                 Umumiy to'lov summasi
               </th>
-              <th className="px-6 py-3 text-center font-medium">
-                To'lov qilingan summa
-              </th>
-              <th className="px-6 py-3 text-center font-medium">Qarzdorlik</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E4E4E7]">
@@ -128,17 +130,17 @@ const Sale = () => {
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm text-[#18181B]">
-                      {money(o?.payments?.total_amount)} so'm
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center whitespace-nowrap">
-                    <div className="text-sm text-[#18181B]">
-                      {money(o?.payments?.paid_amount)} so'm
+                      {o.sales_assistant_id.username}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm">
                       {money(o?.payments?.debt_amount, 'debt')} so'm
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center whitespace-nowrap">
+                    <div className="text-sm text-[#18181B]">
+                      {money(o?.payments?.total_amount)} so'm
                     </div>
                   </td>
                 </tr>
@@ -159,7 +161,7 @@ const Sale = () => {
             currentPage={getAllData.page || 1}
             totalPages={getAllData.total_pages || 1}
             totalItems={getAllData.total || 0}
-            itemsPerPage={getAllData.limit || 10} // Set the number of items per page
+            itemsPerPage={getAllData.limit || 10}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
           />

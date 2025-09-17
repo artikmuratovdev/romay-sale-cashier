@@ -1,13 +1,13 @@
+import { TablePagination } from '@/components/TablePagination'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { useGetUser } from '@/hooks/useGetUser'
 import { useGetClientsQuery } from '@/store/clients/clients.api'
 import { AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TableSkeleton } from '../../components/ui/table-skeleton'
 import AddClientDialog from './AddClientDialog'
-import { useGetUser } from '@/hooks/useGetUser'
-import { TablePagination } from '@/components/TablePagination'
-import { Input } from '@/components/ui/input'
 
 function BalanceCell({ value }: { value: number }) {
   const isZero = value === 0
@@ -52,28 +52,41 @@ function Clients() {
 
   const handleItemsPerPageChange = (itemsPerPage: number) => {
     setLimit(itemsPerPage)
-    setCurrentPage(1) // Reset to first page when items per page changes
+    setCurrentPage(1)
   }
 
   const handleSearchChange = (value: string) => {
     setSearch(value)
-    setCurrentPage(1) // Reset to first page when searching
+    setCurrentPage(1)
   }
   const [open, setOpen] = useState(false)
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center space-x-6">
-        <h1 className="text-[30px] font-semibold text-[#09090B]">Mijozlar</h1>
-        <Input
-          placeholder="Ismi yoki telefon raqami bo'yicha qidiring"
-          className="pr-10 max-w-md"
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
-        <Button onClick={() => setOpen(true)} variant="default">
-          Mijoz qo'shish
-        </Button>
+      <div className="mb-6 space-y-4">
+        {/* Title and Add Client Button */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl sm:text-[26px] lg:text-[30px] font-semibold text-[#09090B]">
+            Mijozlar
+          </h1>
+          <Button
+            onClick={() => setOpen(true)}
+            variant="default"
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-sm sm:text-base py-2.5 sm:py-3 px-4"
+          >
+            Mijoz qo'shish
+          </Button>
+        </div>
+
+        {/* Search Input */}
+        <div className="w-full">
+          <Input
+            placeholder="Ismi yoki telefon raqami bo'yicha qidiring"
+            className="w-full"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
       </div>
 
       {isLoading ? (
@@ -100,7 +113,7 @@ function Clients() {
           </p>
         </div>
       ) : (
-        <div className="border border-[#E4E4E7] rounded-lg overflow-hidden">
+        <div className="border border-[#E4E4E7] rounded-lg overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
               <tr>

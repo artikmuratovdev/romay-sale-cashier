@@ -41,26 +41,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
 import type { Sale } from '@/store/sales/types'
-
-// Fixed money function with proper null checks
-function money(
-  n: number | undefined | null,
-  sign: 'neutral' | 'debt' | 'pos' = 'neutral'
-) {
-  // Handle null, undefined, or invalid number cases
-  if (n === null || n === undefined || isNaN(n)) {
-    n = 0
-  }
-
-  const text = n.toLocaleString('uz-UZ')
-  const cls =
-    sign === 'debt'
-      ? 'text-rose-600'
-      : sign === 'pos'
-        ? 'text-emerald-600'
-        : 'text-[#18181B]'
-  return <span className={cls}>{text}</span>
-}
+import money from '../selling/components/money'
 
 type UpdateSaleSchema = {
   client_id: string

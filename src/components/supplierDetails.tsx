@@ -30,29 +30,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-
-// Dummy dataset
-// const orders = Array.from({ length: 8 }).map((_, i) => ({
-//   id: String(i + 1),
-//   date: '02.02.2025',
-//   number: '123456',
-//   total: 2040500,
-//   paid: 1500000,
-//   debt: 540500,
-//   downloadable: i % 2 === 1,
-//   image: '/vite.svg',
-// }))
-
-function money(n: number, sign: 'neutral' | 'debt' | 'pos' = 'neutral') {
-  const text = n.toLocaleString('uz-UZ')
-  const cls =
-    sign === 'debt'
-      ? 'text-rose-600'
-      : sign === 'pos'
-        ? 'text-emerald-600'
-        : 'text-[#18181B]'
-  return <span className={cls}>{text}</span>
-}
+import money from '@/pages/selling/components/money'
 
 // Form schemas
 const paymentSchema = z.object({

@@ -5,7 +5,7 @@ import Sales_assistant from './tabs/Sales_assistant'
 const Selling = () => {
   return (
     <div>
-      <Tabs defaultValue="sale">
+      <Tabs defaultValue="sale" className="mt-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="sale">Sotuv</TabsTrigger>
           <TabsTrigger value="assistants">Sotuvchilar</TabsTrigger>

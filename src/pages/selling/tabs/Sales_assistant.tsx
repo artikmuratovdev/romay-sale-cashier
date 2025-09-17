@@ -35,11 +35,11 @@ const Sales_assistant = () => {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="col-span-3"
+          className="col-span-5 sm:col-span-3"
           placeholder="Qidiruv..."
         />
       </div>
-      <div>
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
             <tr>
