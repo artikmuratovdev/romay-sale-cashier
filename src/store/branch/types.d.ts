@@ -33,3 +33,22 @@ export interface GetBranchesRequest {
   page?: number
   limit?: number
 }
+
+interface GetBranchById {
+  success: true
+  data: {
+    _id: string
+    name: string
+    address: string
+    manager_ids: {
+      _id: string
+      username: string
+      phone: string
+    }[]
+    sales_balance: number
+    service_balance: number
+    total_balance: number
+    created_at: Dater
+    updated_at: Dater
+  }
+}

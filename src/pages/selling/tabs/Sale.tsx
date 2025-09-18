@@ -20,14 +20,20 @@ const Sale = () => {
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  const { data } = useGetAllSalesQuery({
-    branch_id: me?.branch_id._id as string,
-    page,
-    limit,
-    search,
-    date_from: dateRange.from,
-    date_to: dateRange.to,
-  })
+  const { data, isLoading, isFetching } = useGetAllSalesQuery(
+    {
+      branch_id: me?.branch_id._id as string,
+      page,
+      limit,
+      search,
+      date_from: dateRange.from,
+      date_to: dateRange.to,
+    },
+    {
+      refetchOnMountOrArgChange: 30,
+      refetchOnFocus: true,
+    }
+  )
 
   const getAllData = data?.pagination
 
@@ -107,8 +113,22 @@ const Sale = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E4E4E7]">
-            {data?.data?.length ? (
-              data?.data.map((o) => (
+            {isLoading || (isFetching && !data?.data) ? (
+              // Loading holati
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={index}>
+                  {Array.from({ length: 6 }).map((_, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className="px-6 py-4 text-center whitespace-nowrap"
+                    >
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : data?.data?.length ? (
+              data.data.map((o) => (
                 <tr key={o._id} className="hover:bg-[#F9F9F9]">
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm text-[#18181B]">

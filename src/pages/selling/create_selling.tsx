@@ -15,6 +15,7 @@ import type { RootState } from '@/store/store'
 import { ClientCombobox } from './ClientCombobox'
 import { useGetUser } from '@/hooks/useGetUser'
 import { AssistantCombobox } from './AssistentCombobox'
+import { useNavigate } from 'react-router-dom'
 
 export type Product = {
   id: string
@@ -40,6 +41,7 @@ export default function Create_selling() {
   const handleRequest = useHandleRequest()
   const [createSale] = useCreateSaleMutation()
   const me = useGetUser()
+  const navigate = useNavigate()
 
   const ClientId = useSelector((state: RootState) => state.sale.client)
   const AssistantId = useSelector((state: RootState) => state.sale.assistant)
@@ -136,7 +138,6 @@ export default function Create_selling() {
   const sendItems = async () => {
     const errors = validateSale()
 
-    // Check if there are any validation errors
     const hasErrors = Object.values(errors).some((error) => error)
 
     if (hasErrors) {
@@ -166,6 +167,7 @@ export default function Create_selling() {
           )
           resetSaleDataLocal()
           dispatch(triggerRefetch())
+          navigate('/selling')
         },
         onError: (err) => {
           toast.error(err.data.error.msg)
@@ -180,7 +182,6 @@ export default function Create_selling() {
         <SearchInput />
       </div>
 
-      {/* If products exist */}
       {products.length > 0 ? (
         <div
           className={`border rounded-lg overflow-hidden ${
@@ -190,7 +191,6 @@ export default function Create_selling() {
           <Sale_Table />
         </div>
       ) : (
-        // Your empty state here
         <Card className={validationErrors.products ? 'border-red-500' : ''}>
           <div className="py-7 flex items-center justify-center flex-col">
             <div className="mb-4">
@@ -211,7 +211,6 @@ export default function Create_selling() {
         </Card>
       )}
 
-      {/* Bottom section with updated comboboxes */}
       <div className="grid grid-cols-2 gap-8 mt-8">
         <Card>
           <CardContent className="flex flex-col gap-4">

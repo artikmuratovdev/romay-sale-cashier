@@ -1,13 +1,13 @@
-import { Search, LayoutGrid, List } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { useState, useMemo } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { useGetAllProductsQuery } from '@/store/product/product.api'
-import type { ProductWarehouseItem } from '@/store/product/types'
-import { Button } from '@/components/ui/button'
-import { useGetUser } from '@/hooks/useGetUser'
 import { EnhancedProductDetailsModal } from '@/components/enhanced-product-details-modal'
 import { TablePagination } from '@/components/TablePagination'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { useGetUser } from '@/hooks/useGetUser'
+import { useGetAllProductsQuery } from '@/store/product/product.api'
+import type { ProductWarehouseItem } from '@/store/product/types'
+import { LayoutGrid, List, Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 function ProductPage() {
   const me = useGetUser()
@@ -15,7 +15,11 @@ function ProductPage() {
   const [limit, setLimit] = useState(10)
   const [search, setSearch] = useState('')
 
-  const { data: getAllProductsData } = useGetAllProductsQuery({
+  const {
+    data: getAllProductsData,
+    isLoading,
+    isFetching,
+  } = useGetAllProductsQuery({
     branch: me?.branch_id._id,
     page,
     limit,
@@ -156,7 +160,34 @@ function ProductPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E4E7]">
-              {filteredProducts.length > 0 ? (
+              {isLoading || (isFetching && !getAllProductsData?.data) ? (
+                // Loading skeleton
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={`loading-${index}`}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="h-4 w-20 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="h-4 w-24 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="h-4 w-20 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="h-4 w-28 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                  </tr>
+                ))
+              ) : filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr
                     key={product._id}
@@ -238,7 +269,31 @@ function ProductPage() {
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredProducts.length > 0 ? (
+            {isLoading || (isFetching && !getAllProductsData?.data) ? (
+              // Grid loading skeleton
+              Array.from({ length: 8 }).map((_, index) => (
+                <Card
+                  key={`loading-${index}`}
+                  className="overflow-hidden border border-[#E4E4E7] rounded-xl"
+                >
+                  <CardContent className="p-3">
+                    <div className="w-full h-36 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="mt-3">
+                      <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="mt-2">
+                      <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="mt-1">
+                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="mt-2">
+                      <div className="h-6 w-28 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : filteredProducts.length > 0 ? (
               filteredProducts.map((product, idx) => (
                 <Card
                   key={`${product._id}-${idx}`}

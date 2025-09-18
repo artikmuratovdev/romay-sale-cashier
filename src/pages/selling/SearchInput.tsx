@@ -16,7 +16,6 @@ function SearchInput() {
   const me = useGetUser()
   const dispatch = useDispatch()
 
-  // Add selector for refetch trigger
   const shouldRefetch = useSelector(
     (state: RootState) => state.sale.shouldRefetch
   )
@@ -31,9 +30,10 @@ function SearchInput() {
       branch: me?.branch_id._id,
     },
     {
-      skip: !me?.branch_id._id, // Skip query if branch_id is not available
+      skip: !me?.branch_id._id,
     }
   )
+  console.log('Products:', inputRef.current?.value)
 
   useEffect(() => {
     if (products?.data && Array.isArray(products.data)) {
@@ -41,7 +41,6 @@ function SearchInput() {
     }
   }, [products, dispatch])
 
-  // Separate useEffect for refetch trigger
   useEffect(() => {
     if (me?.branch_id._id) {
       refetch()
@@ -169,7 +168,6 @@ function SearchInput() {
           </thead>
         </table>
 
-        {/* Scrollable tbody container */}
         <div className="max-h-80 overflow-y-auto">
           <table className="w-full">
             <tbody className="text-[#71717A] text-sm bg-white">

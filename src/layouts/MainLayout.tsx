@@ -25,11 +25,17 @@ import { Link, useLocation } from 'react-router-dom'
 
 import { Package, Store, UserRound } from 'lucide-react'
 import { clearAuthTokens } from '@/utils/auth'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/store/store'
 
 const HIDE_SIDEBAR_ROUTES = ['/auth/login']
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation()
+
+  const { sales_balance } = useSelector(
+    (state: RootState) => state.branchSalesBalance
+  )
 
   const hideSidebar = HIDE_SIDEBAR_ROUTES.includes(pathname)
 
@@ -126,6 +132,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 />
               </div>
             </div>
+            <p className="font-bold">Sotuv Balans : {sales_balance}</p>
           </div>
         </header>
         <main className="px-5 py-2">{children}</main>

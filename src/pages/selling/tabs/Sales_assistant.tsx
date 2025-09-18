@@ -11,7 +11,7 @@ const Sales_assistant = () => {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
 
-  const { data } = useGetAllAssistantQuery({
+  const { data, isLoading, isFetching } = useGetAllAssistantQuery({
     branch_id: me?.branch_id._id,
     page,
     limit,
@@ -31,11 +31,11 @@ const Sales_assistant = () => {
 
   return (
     <div className="py-4">
-      <div className="mb-4 grid grid-cols-5 items-center gap-4">
+      <div className="mb-4 w-full items-center">
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="col-span-5 sm:col-span-3"
+          className="w-full"
           placeholder="Qidiruv..."
         />
       </div>
@@ -52,8 +52,32 @@ const Sales_assistant = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E4E4E7]">
-            {data?.data?.length ? (
-              data?.data.map((o) => (
+            {isLoading || (isFetching && !data?.data) ? (
+              // Loading skeleton
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={`loading-${index}`}>
+                  <td className="px-6 py-4 text-center">
+                    <div className="h-4 w-24 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="h-4 w-28 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="h-4 w-32 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="h-4 w-32 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="h-4 w-16 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="h-4 w-32 mx-auto bg-gray-200 rounded animate-pulse"></div>
+                  </td>
+                </tr>
+              ))
+            ) : data?.data?.length ? (
+              data.data.map((o) => (
                 <tr key={o._id} className="hover:bg-[#F9F9F9]">
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm text-[#18181B]">
@@ -93,7 +117,7 @@ const Sales_assistant = () => {
             ) : (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                  Buyurtmalar topilmadi
+                  Sotuvchilar topilmadi
                 </td>
               </tr>
             )}

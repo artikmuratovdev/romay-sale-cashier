@@ -17,7 +17,6 @@ export const PrivateRoute = () => {
         <Loader2 className="animate-spin" />
       </div>
     )
-  console.log(isError, userData, token, role, 'private route')
   if (isError || !userData || !token || !CheckRole(role, ['sale_cashier']))
     // if (false)
     return <Navigate to={'/auth/login'} />

@@ -6,6 +6,7 @@ import type {
   UpdateBranchRequest,
   GetBranchesResponse,
   GetBranchesRequest,
+  GetBranchById,
 } from './types'
 
 export const branchApi = baseApi.injectEndpoints({
@@ -45,6 +46,13 @@ export const branchApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['branches'],
     }),
+    getBranchById: builder.query<GetBranchById, string>({
+      query: (id) => ({
+        url: `/branch/get-one/${id}`,
+        method: 'GET',
+      }),
+      providesTags: ['branches'],
+    }),
   }),
 })
 
@@ -53,4 +61,5 @@ export const {
   useUpdateBranchMutation,
   useGetAllBranchesQuery,
   useDeleteBranchMutation,
+  useGetBranchByIdQuery,
 } = branchApi
