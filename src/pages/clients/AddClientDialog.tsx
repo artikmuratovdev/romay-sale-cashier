@@ -20,7 +20,7 @@ import * as z from 'zod'
 import { useAddClientMutation } from '@/store/clients/clients.api'
 import { useHandleRequest } from '@/hooks/use-handle-request'
 import { useGetUser } from '@/hooks/useGetUser'
-import { toast } from 'sonner'
+import { toast, Toaster } from 'sonner'
 
 type Props = {
   open: boolean
@@ -73,12 +73,15 @@ export default function AddClientDialog({ open, setOpen }: Props) {
         setOpen(false)
         form.reset()
       },
-      onError: (err) => console.log(err.error.msg),
+      onError: (err) => {
+        toast.error(err.data.error.msg)
+      },
     })
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      <Toaster />
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>Mijoz qo'shish</DialogTitle>
