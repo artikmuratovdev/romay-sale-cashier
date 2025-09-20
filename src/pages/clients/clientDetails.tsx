@@ -42,6 +42,7 @@ import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
 import type { Sale } from '@/store/sales/types'
 import money from '../selling/components/money'
+import OrderDetailsDialog from './components/OrderDetailsDialog'
 
 type UpdateSaleSchema = {
   client_id: string
@@ -83,6 +84,8 @@ export default function ClientDetails() {
     id: string
     orderNumber: string
   } | null>(null)
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Sale | null>(null)
   const [editData, setEditData] = useState<UpdateSaleSchema>({
     client_id: '',
     sales_assistant_id: '',
@@ -205,6 +208,11 @@ export default function ClientDetails() {
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false)
     setSaleToDelete(null)
+  }
+
+  const openOrderDetails = (order: Sale) => {
+    setSelectedOrder(order)
+    setIsOrderDetailsOpen(true)
   }
 
   const handleSaveChanges = async () => {
@@ -348,9 +356,9 @@ export default function ClientDetails() {
           </div>
           <div className="md:col-span-1">
             <div className="rounded-md border border-[#E4E4E7] p-5">
-              <div className="text-sm text-[#71717A]">Balans</div>
-              <div className="text-[28px] font-semibold text-rose-600">
-                {money(data?.data?.debt?.amount, 'debt')} so'm
+              <div className="text-sm text-[#71717A]">Qarz</div>
+              <div className="text-[28px] font-semibold">
+                {money(data?.data?.debt?.total_amount, 'debt')} so'm
               </div>
             </div>
           </div>
@@ -365,19 +373,19 @@ export default function ClientDetails() {
         <table className="w-full">
           <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
             <tr>
-              <th className="px-6 py-3 text-left font-medium">
+              <th className="px-6 py-3 text-center font-medium">
                 Buyurtma sanasi
               </th>
-              <th className="px-6 py-3 text-left font-medium">
+              <th className="px-6 py-3 text-center font-medium">
                 Buyurtma raqami
               </th>
-              <th className="px-6 py-3 text-left font-medium">
+              <th className="px-6 py-3 text-center font-medium">
                 Umumiy to'lov summasi
               </th>
-              <th className="px-6 py-3 text-left font-medium">
+              <th className="px-6 py-3 text-center font-medium">
                 To'lov qilingan summa
               </th>
-              <th className="px-6 py-3 text-left font-medium">Qarzdorlik</th>
+              <th className="px-6 py-3 text-center font-medium">Qarzdorlik</th>
               <th className="px-6 py-3 text-center font-medium">Amallar</th>
             </tr>
           </thead>
@@ -392,9 +400,12 @@ export default function ClientDetails() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
-                  <div className="text-sm text-[#18181B]">
+                  <button
+                    onClick={() => openOrderDetails(o)}
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                  >
                     {o?.payments?._id || 'N/A'}
-                  </div>
+                  </button>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-[#18181B]">
@@ -827,6 +838,18 @@ export default function ClientDetails() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Order Details Modal */}
+      <OrderDetailsDialog
+        open={isOrderDetailsOpen}
+        setOpen={(open) => {
+          setIsOrderDetailsOpen(open)
+          if (!open) {
+            setSelectedOrder(null)
+          }
+        }}
+        orderData={selectedOrder}
+      />
     </div>
   )
 }

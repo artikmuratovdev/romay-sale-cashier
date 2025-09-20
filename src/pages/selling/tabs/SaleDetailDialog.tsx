@@ -13,6 +13,12 @@ type Props = {
   saleData: Sale // bu GET ONE dan keladigan data
 }
 
+const status: Record<string, string> = {
+  IN_PROGRESS: 'Bajarilmoqda',
+  COMPLETED: 'Bajarildi',
+  CANCELLED: 'Bekor qilindi',
+}
+
 export default function SaleDetailsDialog({ open, setOpen, saleData }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -56,7 +62,7 @@ export default function SaleDetailsDialog({ open, setOpen, saleData }: Props) {
             {/* Status */}
             <div>
               <p className="text-sm text-gray-500">Status</p>
-              <p className="font-medium">{saleData.status || "Noma'lum"}</p>
+              <p className="font-medium">{status[saleData.status] || "Noma'lum"}</p>
             </div>
 
             {/* Payments */}

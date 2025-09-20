@@ -2,7 +2,6 @@ import { useUserQuery } from '@/store/auth/auth.api'
 import { clearAuthTokens, getAuthToken } from '@/utils/auth'
 import { Loader2 } from 'lucide-react'
 import { Navigate, Outlet } from 'react-router-dom'
-// import { useEffect } from 'react'
 
 export const PrivateRoute = () => {
   const { data: userData, isLoading: userLoading, isError } = useUserQuery()

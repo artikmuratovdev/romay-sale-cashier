@@ -119,7 +119,7 @@ function Clients() {
                   Telefon raqami
                 </th>
                 <th className="px-6 py-3 text-left font-medium">Segment</th>
-                <th className="px-6 py-3 text-left font-medium">Balans</th>
+                <th className="px-6 py-3 text-left font-medium">Qarz</th>
                 <th className="px-6 py-3 text-center font-medium">
                   Buyurtmalar soni
                 </th>
