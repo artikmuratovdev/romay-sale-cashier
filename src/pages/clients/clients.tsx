@@ -1,7 +1,6 @@
 import { TablePagination } from '@/components/TablePagination'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useGetUser } from '@/hooks/useGetUser'
 import { useGetClientsQuery } from '@/store/clients/clients.api'
 import { AlertCircle } from 'lucide-react'
 import { useState } from 'react'
@@ -30,13 +29,11 @@ function BalanceCell({ value }: { value: number }) {
 }
 
 function Clients() {
-  const me = useGetUser()
   const [currentPage, setCurrentPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [search, setSearch] = useState('')
 
   const { data, isLoading, isError } = useGetClientsQuery({
-    branch_id: me?.branch_id._id,
     page: currentPage,
     limit: limit,
     search: search,

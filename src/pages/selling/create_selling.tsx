@@ -16,6 +16,7 @@ import { ClientCombobox } from './ClientCombobox'
 import { useGetUser } from '@/hooks/useGetUser'
 import { AssistantCombobox } from './AssistentCombobox'
 import { useNavigate } from 'react-router-dom'
+import type { CreateSale } from '@/store/sales/types'
 
 export type Product = {
   id: string
@@ -102,7 +103,7 @@ export default function Create_selling() {
   const validateSale = (): ValidationErrors => {
     const errors: ValidationErrors = {
       products: !filteredProducts || filteredProducts.length === 0,
-      client: !ClientId,
+      client: false,
       assistant: !AssistantId,
       payment: payment <= 0,
     }
@@ -146,9 +147,8 @@ export default function Create_selling() {
     }
 
     if (filteredProducts) {
-      const data = {
+      const data: CreateSale = {
         branch_id: me?.branch_id._id as string,
-        client_id: ClientId as string,
         sales_assistant_id: AssistantId as string,
         cashier_id: me?._id as string,
         items: filteredProducts.map((p) => ({
@@ -156,6 +156,9 @@ export default function Create_selling() {
           quantity: p.qty,
         })),
         paid_amount: payment,
+      }
+      if (ClientId) {
+        data.client_id = ClientId as string
       }
       console.log(data)
 
@@ -215,23 +218,8 @@ export default function Create_selling() {
         <Card>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label className={validationErrors.client ? 'text-red-500' : ''}>
-                Mijoz {validationErrors.client && '*'}
-              </Label>
-              <div
-                className={
-                  validationErrors.client
-                    ? 'border border-red-500 rounded-md'
-                    : ''
-                }
-              >
-                <ClientCombobox />
-              </div>
-              <p
-                className={`text-[14px] ${validationErrors.client ? 'text-red-500' : 'text-[#71717A]'}`}
-              >
-                {validationErrors.client && 'Mijozni tanlang'}
-              </p>
+              <Label>Mijoz (ixtiyoriy)</Label>
+              <ClientCombobox />
             </div>
             <div className="flex flex-col gap-2">
               <Label

@@ -8,10 +8,13 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import DatePicker from '../components/DatePicker'
 import money from '../components/money'
+import SaleDetailsDialog from './SaleDetailDialog'
+import type { Sale } from '@/store/sales/types'
 
-const Sale = () => {
+export default function Sale() {
   const me = useGetUser()
   const [search, setSearch] = useState('')
+  const [open, setOpen] = useState(false)
 
   const [dateRange, setDateRange] = useState<{
     from?: string
@@ -45,6 +48,25 @@ const Sale = () => {
     setLimit(itemsPerPage)
     setPage(1)
   }
+  const [selectedSale, setSelectedSale] = useState<Sale>({
+    _id: 'string',
+    branch_id: { _id: 'string', name: 'string', address: 'string' },
+    cashier_id: { _id: 'string', username: 'string', phone: 'string' },
+    client_id: { _id: 'string', username: 'string', phone: 'string' },
+    sales_assistant_id: { _id: 'string', username: 'string', phone: 'string' },
+    items: [],
+    status: 'PENDING',
+    payments: {
+      total_amount: 0,
+      paid_amount: 0,
+      debt_amount: 0,
+      type: '',
+      currency: '',
+      _id: '',
+    },
+    created_at: '',
+    updated_at: '',
+  })
 
   return (
     <div className="py-4">
@@ -99,10 +121,10 @@ const Sale = () => {
           <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
             <tr>
               <th className="px-6 py-3 text-center font-medium">
-                Buyurtma sanasi
+                Buyurtma raqami
               </th>
               <th className="px-6 py-3 text-center font-medium">
-                Buyurtma raqami
+                Buyurtma sanasi
               </th>
               <th className="px-6 py-3 text-center font-medium">Mijoz</th>
               <th className="px-6 py-3 text-center font-medium">Sotuvchi</th>
@@ -131,15 +153,21 @@ const Sale = () => {
               data.data.map((o) => (
                 <tr key={o._id} className="hover:bg-[#F9F9F9]">
                   <td className="px-6 py-4 text-center whitespace-nowrap">
-                    <div className="text-sm text-[#18181B]">
-                      {o?.created_at
-                        ? format(new Date(o.created_at), 'dd.MM.yyyy')
-                        : 'N/A'}
+                    <div
+                      onClick={() => {
+                        setSelectedSale(o)
+                        setOpen(true)
+                      }}
+                      className="text-sm text-[#18181B] underline cursor-pointer"
+                    >
+                      {o?.payments?._id || 'N/A'}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm text-[#18181B]">
-                      {o?.payments?._id || 'N/A'}
+                      {o?.created_at
+                        ? format(new Date(o.created_at), 'dd.MM.yyyy')
+                        : 'N/A'}
                     </div>
                   </td>
 
@@ -187,8 +215,11 @@ const Sale = () => {
           />
         )}
       </div>
+      <SaleDetailsDialog
+        open={open}
+        setOpen={setOpen}
+        saleData={selectedSale}
+      />
     </div>
   )
 }
-
-export default Sale
