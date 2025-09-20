@@ -1,6 +1,7 @@
 function money(
   n: number | undefined | null,
-  sign: 'neutral' | 'debt' | 'pos' = 'neutral'
+  sign: 'neutral' | 'debt' | 'pos' = 'neutral',
+  currency: string | undefined = ""
 ) {
   if (n === null || n === undefined || isNaN(n)) {
     n = 0
@@ -13,7 +14,7 @@ function money(
       : sign === 'pos' || text === '0'
         ? 'text-emerald-600'
         : 'text-[#18181B]'
-  return <span className={cls}>{text}</span>
+  return <span className={cls}>{text} {currency}</span>
 }
 
 export default money

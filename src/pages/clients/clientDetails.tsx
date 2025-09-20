@@ -358,7 +358,7 @@ export default function ClientDetails() {
             <div className="rounded-md border border-[#E4E4E7] p-5">
               <div className="text-sm text-[#71717A]">Qarz</div>
               <div className="text-[28px] font-semibold">
-                {money(data?.data?.debt?.total_amount, 'debt')} so'm
+                {money(data?.data?.debt?.total_amount, 'debt' , "so'm")}
               </div>
             </div>
           </div>
@@ -409,17 +409,17 @@ export default function ClientDetails() {
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-[#18181B]">
-                    {money(o?.payments?.total_amount)} so'm
+                    {money(o?.payments?.total_amount, 'neutral' , "so'm")}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-[#18181B]">
-                    {money(o?.payments?.paid_amount)} so'm
+                    {money(o?.payments?.paid_amount, 'pos' , "so'm")}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm">
-                    {money(o?.payments?.debt_amount, 'debt')} so'm
+                    {money(o?.payments?.debt_amount, 'debt' , "so'm")}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">

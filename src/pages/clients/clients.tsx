@@ -7,26 +7,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TableSkeleton } from '../../components/ui/table-skeleton'
 import AddClientDialog from './AddClientDialog'
-
-function BalanceCell({ value }: { value: number }) {
-  const isZero = value === 0
-  const isNegative = value < 0
-  const formatted =
-    (isNegative ? '-' : '') + Math.abs(value).toLocaleString('uz-UZ') + " so'm"
-  return (
-    <span
-      className={
-        isZero
-          ? 'text-emerald-600'
-          : isNegative
-            ? 'text-rose-600'
-            : 'text-emerald-600'
-      }
-    >
-      {isZero ? "0 so'm" : formatted}
-    </span>
-  )
-}
+import money from '../selling/components/money'
 
 function Clients() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -115,11 +96,11 @@ function Clients() {
             <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
               <tr>
                 <th className="px-6 py-3 text-left font-medium">Ismi</th>
-                <th className="px-6 py-3 text-left font-medium">
+                <th className="px-6 py-3 text-center font-medium">
                   Telefon raqami
                 </th>
-                <th className="px-6 py-3 text-left font-medium">Segment</th>
-                <th className="px-6 py-3 text-left font-medium">Qarz</th>
+                <th className="px-6 py-3 text-center font-medium">Segment</th>
+                <th className="px-6 py-3 text-center font-medium">Qarz</th>
                 <th className="px-6 py-3 text-center font-medium">
                   Buyurtmalar soni
                 </th>
@@ -138,27 +119,27 @@ function Clients() {
                       {c.username}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-center">
                     <div className="text-sm text-[#18181B]">
                       {c.phone || 'Mavjud emas'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-center">
                     <div className="text-sm text-[#18181B]">
                       {c.profession || 'Mavjud emas'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 text-center">
                     <div className="text-sm">
-                      <BalanceCell value={c.balance || 0} />
+                      {money(c.debt.total_amount, 'debt' , "so'm")}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 text-center">
                     <div className="text-sm text-[#18181B]">
                       {c.sales_count || 0}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-6 py-4 text-center">
                     <div className="text-sm text-[#18181B]">
                       {c.branch_id.name || "Noma'lum"}
                     </div>

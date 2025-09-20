@@ -183,12 +183,12 @@ export default function Sale() {
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm">
-                      {money(o?.payments?.debt_amount, 'debt')} so'm
+                      {money(o?.payments?.debt_amount, 'debt' , "so'm")}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm text-[#18181B]">
-                      {money(o?.payments?.total_amount)} so'm
+                      {money(o?.payments?.total_amount, 'neutral' , "so'm")}
                     </div>
                   </td>
                 </tr>
