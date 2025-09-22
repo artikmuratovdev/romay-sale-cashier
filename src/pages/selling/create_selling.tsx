@@ -104,7 +104,7 @@ export default function Create_selling() {
     const errors: ValidationErrors = {
       products: !filteredProducts || filteredProducts.length === 0,
       client: false,
-      assistant: false,
+      assistant: !AssistantId,
       payment: payment <= 0,
     }
 
@@ -123,6 +123,12 @@ export default function Create_selling() {
       setValidationErrors((prev) => ({ ...prev, client: false }))
     }
   }, [ClientId])
+
+  useEffect(() => {
+    if (AssistantId) {
+      setValidationErrors((prev) => ({ ...prev, assistant: false }))
+    }
+  }, [AssistantId])
 
   useEffect(() => {
     if (payment > 0) {
@@ -144,6 +150,7 @@ export default function Create_selling() {
       const data: CreateSale = {
         branch_id: me?.branch_id._id as string,
         cashier_id: me?._id as string,
+        sales_assistant_id: AssistantId as string,
         items: filteredProducts.map((p) => ({
           product_id: p._id,
           quantity: p.qty,
@@ -152,9 +159,6 @@ export default function Create_selling() {
       }
       if (ClientId) {
         data.client_id = ClientId as string
-      }
-      if (AssistantId) {
-        data.sales_assistant_id = AssistantId as string
       }
       console.log(data)
 
@@ -218,8 +222,17 @@ export default function Create_selling() {
               <ClientCombobox />
             </div>
             <div className="flex flex-col gap-2">
-              <Label>Assistent (ixtiyoriy)</Label>
-              <AssistantCombobox />
+              <Label className={validationErrors.assistant ? 'text-red-500' : ''}>
+                Assistent {validationErrors.assistant && '*'}
+              </Label>
+              <div className={validationErrors.assistant ? 'border-red-500 rounded-md border' : ''}>
+                <AssistantCombobox />
+              </div>
+              {validationErrors.assistant && (
+                <p className="text-red-500 text-[14px]">
+                  Assistentni tanlang
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-2">
               <Label className={validationErrors.payment ? 'text-red-500' : ''}>
@@ -233,11 +246,12 @@ export default function Create_selling() {
                       : ''
                   }`}
                   placeholder="0"
-                  type="number"
-                  value={payment === 0 ? '' : payment}
-                  onChange={(e) =>
-                    setPayment(e.target.value ? Number(e.target.value) : 0)
-                  }
+                  type="text"
+                  value={payment === 0 ? '' : payment.toLocaleString()}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d]/g, '')
+                    setPayment(value ? Number(value) : 0)
+                  }}
                 />
                 <span className="absolute right-2 top-[10px] text-[14px] text-[#71717A]">
                   UZS
