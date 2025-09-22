@@ -104,7 +104,7 @@ export default function Create_selling() {
     const errors: ValidationErrors = {
       products: !filteredProducts || filteredProducts.length === 0,
       client: false,
-      assistant: !AssistantId,
+      assistant: false,
       payment: payment <= 0,
     }
 
@@ -125,12 +125,6 @@ export default function Create_selling() {
   }, [ClientId])
 
   useEffect(() => {
-    if (AssistantId) {
-      setValidationErrors((prev) => ({ ...prev, assistant: false }))
-    }
-  }, [AssistantId])
-
-  useEffect(() => {
     if (payment > 0) {
       setValidationErrors((prev) => ({ ...prev, payment: false }))
     }
@@ -149,7 +143,6 @@ export default function Create_selling() {
     if (filteredProducts) {
       const data: CreateSale = {
         branch_id: me?.branch_id._id as string,
-        sales_assistant_id: AssistantId as string,
         cashier_id: me?._id as string,
         items: filteredProducts.map((p) => ({
           product_id: p._id,
@@ -159,6 +152,9 @@ export default function Create_selling() {
       }
       if (ClientId) {
         data.client_id = ClientId as string
+      }
+      if (AssistantId) {
+        data.sales_assistant_id = AssistantId as string
       }
       console.log(data)
 
@@ -222,25 +218,8 @@ export default function Create_selling() {
               <ClientCombobox />
             </div>
             <div className="flex flex-col gap-2">
-              <Label
-                className={validationErrors.assistant ? 'text-red-500' : ''}
-              >
-                Assistent {validationErrors.assistant && '*'}
-              </Label>
-              <div
-                className={
-                  validationErrors.assistant
-                    ? 'border border-red-500 rounded-md'
-                    : ''
-                }
-              >
-                <AssistantCombobox />
-              </div>
-              <p
-                className={`text-[14px] ${validationErrors.assistant ? 'text-red-500' : 'text-[#71717A]'}`}
-              >
-                {validationErrors.assistant && 'Assentni tanlang'}
-              </p>
+              <Label>Assistent (ixtiyoriy)</Label>
+              <AssistantCombobox />
             </div>
             <div className="flex flex-col gap-2">
               <Label className={validationErrors.payment ? 'text-red-500' : ''}>
