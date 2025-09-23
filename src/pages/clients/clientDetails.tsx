@@ -63,8 +63,8 @@ const STATUS_OPTIONS = [
 
 export default function ClientDetails() {
   const id = useParams<{ id: string }>().id
-  const { data } = useGetOneClientQuery(id as string, { skip: !id })
-  const { data: client_items, refetch } = useGetAllSalesQuery(
+  const { data , refetch: refetchClient} = useGetOneClientQuery(id as string, { skip: !id })
+  const { data: client_items, refetch: refetchSales } = useGetAllSalesQuery(
     { client_id: id as string },
     { skip: !id }
   )
@@ -269,7 +269,7 @@ export default function ClientDetails() {
         updateSale({ id: selectedSale._id, data: updatePayload }).unwrap(),
       onSuccess: () => {
         toast.success('Sotuv muvaffaqiyatli yangilandi!')
-        refetch()
+        refetchClient()
         closeEditModal()
       },
       onError: (err) => {
@@ -285,7 +285,8 @@ export default function ClientDetails() {
       request: () => deleteSale(saleToDelete.id).unwrap(),
       onSuccess: () => {
         toast.success("Sotuv muvaffaqiyatli o'chirildi!")
-        refetch()
+        refetchClient()
+        refetchSales()
       },
       onError: (err) => {
         toast.error(err?.msg || err?.data?.error?.msg || 'Xatolik yuz berdi')

@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/auth/LoginPage'
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute'
 import Clients from './pages/clients/clients'
@@ -9,7 +9,9 @@ import Selling from './pages/selling/Selling'
 export const AppRouter = () => {
   return (
     <Routes>
-      <Route path="/" element={<PrivateRoute />} />
+      <Route path="/" element={<PrivateRoute />}>
+      <Route index element={<Navigate to={'/selling'} />} />
+      </Route>
       <Route path={'auth'}>
         <Route path={'login'} element={<LoginPage />} />
       </Route>

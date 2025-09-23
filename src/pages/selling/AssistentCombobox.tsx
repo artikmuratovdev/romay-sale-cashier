@@ -30,21 +30,9 @@ export function AssistantCombobox() {
   const me = useGetUser()
   const dispatch = useDispatch()
 
-  // Replace this with your actual API call
   const { data: assistants } = useGetAllAssistantQuery({
     branch_id: me?.branch_id._id,
   })
-
-  // console.log('Assistant' , data?.data)
-
-  // Temporary mock data - replace with actual API call
-  // const assistants = {
-  //   data: [
-  //     { _id: '1', name: 'Ahmad Karimov', username: 'ahmad_k' },
-  //     { _id: '2', name: 'Fatima Tosheva', username: 'fatima_t' },
-  //     { _id: '3', name: 'Bobur Alimov', username: 'bobur_a' },
-  //   ] as Assistant[]
-  // }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

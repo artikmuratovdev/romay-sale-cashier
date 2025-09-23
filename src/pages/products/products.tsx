@@ -26,9 +26,9 @@ function ProductPage() {
     search,
   })
 
-  const formatUsd = (value: string) => {
+  const formatUsd = (value: string, currency: string = 'USD') => {
     const num = Number(String(value).replace(/[^0-9]/g, '')) || 0
-    return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    return num.toLocaleString('ru-RU') + ' ' + currency
   }
 
   const getCategoryName = (
@@ -237,7 +237,7 @@ function ProductPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="text-sm text-[#18181B]">
-                        {formatUsd(product.product.price + '')}
+                        {formatUsd(product.product.price + '', product.product.currency)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
