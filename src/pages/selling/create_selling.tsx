@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Input } from '../../components/ui/input'
-import { Check } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
@@ -219,19 +219,49 @@ export default function Create_selling() {
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label>Mijoz (ixtiyoriy)</Label>
-              <ClientCombobox />
+              <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <ClientCombobox />
+              </div>
+              {ClientId && (
+                <Button
+                variant="outline"
+                size="sm"
+                onClick={() => dispatch(resetSaleData())}
+                >
+                <X className='text-red-500' />
+                </Button>
+              )}
+              </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Label className={validationErrors.assistant ? 'text-red-500' : ''}>
-                Assistent {validationErrors.assistant && '*'}
+              <Label
+              className={validationErrors.assistant ? 'text-red-500' : ''}
+              >
+              Assistent {validationErrors.assistant && '*'}
               </Label>
-              <div className={validationErrors.assistant ? 'border-red-500 rounded-md border' : ''}>
+              <div className="flex items-center gap-2">
+              <div
+                className={`flex-1 ${
+                validationErrors.assistant
+                  ? 'border-red-500 rounded-md border'
+                  : ''
+                }`}
+              >
                 <AssistantCombobox />
               </div>
+              {AssistantId && (
+                <Button
+                variant="outline"
+                size="sm"
+                onClick={() => dispatch(resetSaleData())}
+                >
+                <X className='text-red-500' />
+                </Button>
+              )}
+              </div>
               {validationErrors.assistant && (
-                <p className="text-red-500 text-[14px]">
-                  Assistentni tanlang
-                </p>
+                <p className="text-red-500 text-[14px]">Assistentni tanlang</p>
               )}
             </div>
             <div className="flex flex-col gap-2">
