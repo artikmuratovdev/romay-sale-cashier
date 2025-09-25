@@ -1,27 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { useGetOneClientQuery } from '@/store/clients/clients.api'
-import {
-  useGetAllSalesQuery,
-  useUpdateSaleMutation,
-  useDeleteSaleMutation,
-} from '@/store/sales/salesApi'
-import { useGetAllProductsQuery } from '@/store/product/product.api'
-import { format } from 'date-fns'
-import {
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  X,
-  Plus,
-  Minus,
-  AlertTriangle,
-} from 'lucide-react'
-import { useParams } from 'react-router-dom'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import {
   Dialog,
   DialogContent,
@@ -31,16 +8,40 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useState } from 'react'
-import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
+import { useGetOneClientQuery, useCloseDebtMutation } from '@/store/clients/clients.api'
+import { useGetAllProductsQuery } from '@/store/product/product.api'
+import {
+  useDeleteSaleMutation,
+  useGetAllSalesQuery,
+  useUpdateSaleMutation,
+} from '@/store/sales/salesApi'
 import type { Sale } from '@/store/sales/types'
+import { formatPhone } from '@/utils/formatPhone'
+import { format } from 'date-fns'
+import {
+  AlertTriangle,
+  Edit,
+  Minus,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react'
+import { useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import money from '../selling/components/money'
 import OrderDetailsDialog from './components/OrderDetailsDialog'
 
@@ -55,15 +56,11 @@ type UpdateSaleSchema = {
   }>
 }
 
-const STATUS_OPTIONS = [
-  { value: 'IN_PROGRESS', label: 'Jarayonda' },
-  { value: 'COMPLETED', label: 'Tugallangan' },
-  { value: 'CANCELLED', label: 'Bekor qilingan' },
-]
-
 export default function ClientDetails() {
   const id = useParams<{ id: string }>().id
-  const { data , refetch: refetchClient} = useGetOneClientQuery(id as string, { skip: !id })
+  const { data, refetch: refetchClient } = useGetOneClientQuery(id as string, {
+    skip: !id,
+  })
   const { data: client_items, refetch: refetchSales } = useGetAllSalesQuery(
     { client_id: id as string },
     { skip: !id }
@@ -75,10 +72,13 @@ export default function ClientDetails() {
 
   const [updateSale, { isLoading: isUpdating }] = useUpdateSaleMutation()
   const [deleteSale, { isLoading: isDeleting }] = useDeleteSaleMutation()
+  const [closeDebt, { isLoading: isClosingDebt }] = useCloseDebtMutation()
   const handleRequest = useHandleRequest()
   const [openPopover, setOpenPopover] = useState<string | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isDebtModalOpen, setIsDebtModalOpen] = useState(false)
+  const [debtAmount, setDebtAmount] = useState('')
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
   const [saleToDelete, setSaleToDelete] = useState<{
     id: string
@@ -118,25 +118,13 @@ export default function ClientDetails() {
       })
       .filter((id): id is string => Boolean(id)) // Type-safe filter for non-empty strings
 
-    console.log('Selected Product IDs:', selectedProductIds)
-    console.log('Current Item Index:', currentItemIndex)
-
     // Filter out selected products and products with no stock
     const availableProducts = products.data.filter((product) => {
       const hasStock = product.product_count > 0
       const isNotSelected = !selectedProductIds.includes(product._id)
 
-      console.log(
-        `Product ${product.product?.name}: hasStock=${hasStock}, isNotSelected=${isNotSelected}`
-      )
-
       return hasStock && isNotSelected
     })
-
-    console.log(
-      'Available Products:',
-      availableProducts.map((p) => p.product?.name)
-    )
 
     return availableProducts
   }
@@ -210,6 +198,38 @@ export default function ClientDetails() {
     setSaleToDelete(null)
   }
 
+  const closeDebtModal = () => {
+    setIsDebtModalOpen(false)
+    setDebtAmount('')
+  }
+
+  const handleCloseDebt = async () => {
+    if (!id || !debtAmount || parseFloat(debtAmount) <= 0) {
+      toast.error('Iltimos, to‘lanadigan qarz miqdorini kiriting')
+      return
+    }
+
+    const amount = parseFloat(debtAmount)
+    const currentDebt = data?.data?.debt?.total_amount || 0
+
+    if (amount > currentDebt) {
+      toast.error('To‘lanadigan summa qarzdan ko‘p bo‘lmasligi kerak')
+      return
+    }
+
+    await handleRequest({
+      request: () => closeDebt({ id: id as string, amount }).unwrap(),
+      onSuccess: () => {
+        toast.success('Qarz muvaffaqiyatli to‘landi!')
+        refetchClient()
+        closeDebtModal()
+      },
+      onError: (err) => {
+        toast.error(err?.message || err?.data?.error?.msg || 'Xatolik yuz berdi')
+      },
+    })
+  }
+
   const openOrderDetails = (order: Sale) => {
     setSelectedOrder(order)
     setIsOrderDetailsOpen(true)
@@ -273,7 +293,7 @@ export default function ClientDetails() {
         closeEditModal()
       },
       onError: (err) => {
-        toast.error(err?.message || err?.data?.message || 'Xatolik yuz berdi')
+        toast.error(err?.message || err?.data.error.msg || 'Xatolik yuz berdi')
       },
     })
   }
@@ -351,17 +371,23 @@ export default function ClientDetails() {
             <Info title="Ismi" value={data?.data?.username || ''} />
             <Info title="segmenti" value={data?.data?.customer_tier || ''} />
             <Info title="Filial" value={data?.data?.branch_id?.name || ''} />
-            <Info title="Phone Number" value={data?.data?.phone || ''} />
+            <Info title="Phone Number" value={formatPhone(data?.data?.phone)} />
             <Info title="Kasbi" value={data?.data?.profession || ''} />
             <Info title="Mijoz Manzili" value={data?.data?.address || ''} />
           </div>
-          <div className="md:col-span-1">
+          <div className="md:col-span-1 flex flex-col gap-8">
             <div className="rounded-md border border-[#E4E4E7] p-5">
               <div className="text-sm text-[#71717A]">Qarz</div>
               <div className="text-[28px] font-semibold">
-                {money(data?.data?.debt?.total_amount, 'debt' , "so'm")}
+                {money(data?.data?.debt?.total_amount, 'debt', "so'm")}
               </div>
             </div>
+            <button
+              onClick={() => setIsDebtModalOpen(true)}
+              className="bg-teal-600 text-white px-4 py-2 rounded-md"
+            >
+              Qarzni to'lash
+            </button>
           </div>
         </div>
       </div>
@@ -403,24 +429,24 @@ export default function ClientDetails() {
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <button
                     onClick={() => openOrderDetails(o)}
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                    className="text-sm underline cursor-pointer transition-colors"
                   >
                     {o?.payments?._id || 'N/A'}
                   </button>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-[#18181B]">
-                    {money(o?.payments?.total_amount, 'neutral' , "so'm")}
+                    {money(o?.payments?.total_amount, 'neutral', "so'm")}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm text-[#18181B]">
-                    {money(o?.payments?.paid_amount, 'pos' , "so'm")}
+                    {money(o?.payments?.paid_amount, 'pos', "so'm")}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
                   <div className="text-sm">
-                    {money(o?.payments?.debt_amount, 'debt' , "so'm")}
+                    {money(o?.payments?.debt_amount, 'debt', "so'm")}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center whitespace-nowrap">
@@ -471,7 +497,6 @@ export default function ClientDetails() {
         </table>
       </div>
 
-      {/* Edit Sale Modal */}
       <Dialog
         open={isEditModalOpen}
         onOpenChange={(open) => {
@@ -513,31 +538,11 @@ export default function ClientDetails() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={editData.status}
-                  onValueChange={(value) =>
-                    setEditData((prev) => ({ ...prev, status: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status tanlang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="paid_amount">To'langan summa</Label>
                 <Input
                   id="paid_amount"
                   type="text"
-                  value={editData.paid_amount}
+                  value={editData.paid_amount.toLocaleString('ru-RU')}
                   onChange={(e) => handlePaidAmountChange(e.target.value)}
                   placeholder="To'langan summa"
                 />
@@ -834,6 +839,39 @@ export default function ClientDetails() {
                 disabled={isDeleting}
               >
                 {isDeleting ? "O'chirilmoqda..." : "Ha, o'chirish"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDebtModalOpen} onOpenChange={setIsDebtModalOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Qarzni to'lash
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-5">
+            <Input value={debtAmount}
+              onChange={(e) => setDebtAmount(e.target.value)}
+              type="number" placeholder="Qarzni to'lash" />
+            <div className="flex gap-2 mt-2 justify-end">
+              <Button
+                variant="default"
+                onClick={closeDebtModal}
+                className="text-white bg-red-500 hover:text-red-500 hover:bg-white hover:border-red-500 border-2"
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                variant="default"
+                className="text-white bg-green-500 hover:text-green-500 hover:bg-white hover:border-green-500 border-2"
+                onClick={handleCloseDebt}
+                disabled={isClosingDebt}
+              >
+                {isClosingDebt ? "To'lanmoqda..." : "To'lash"}
               </Button>
             </div>
           </div>

@@ -9,6 +9,10 @@ import {
 } from '@/store/sales/salesApi'
 import { useGetAllProductsQuery } from '@/store/product/product.api'
 import { addDays, format } from 'date-fns'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+
+dayjs.extend(utc)
 import {
   MoreHorizontal,
   Edit,
@@ -47,21 +51,14 @@ import SaleDetailsDialog from './SaleDetailDialog'
 import type { Sale } from '@/store/sales/types'
 
 type UpdateSaleSchema = {
-  client_id: string
+  client_id?: string
   sales_assistant_id: string
-  status: string
   paid_amount: number
   items: Array<{
     product_id: string
     quantity: number
   }>
 }
-
-const STATUS_OPTIONS = [
-  { value: 'IN_PROGRESS', label: 'Jarayonda' },
-  { value: 'COMPLETED', label: 'Tugallangan' },
-  { value: 'CANCELLED', label: 'Bekor qilingan' },
-]
 
 export default function Sale() {
   const me = useGetUser()
@@ -75,7 +72,12 @@ export default function Sale() {
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  const { data, isLoading, isFetching, refetch: refetchSales } = useGetAllSalesQuery(
+  const {
+    data,
+    isLoading,
+    isFetching,
+    refetch: refetchSales,
+  } = useGetAllSalesQuery(
     {
       branch_id: me?.branch_id._id as string,
       page,
@@ -105,9 +107,8 @@ export default function Sale() {
     orderNumber: string
   } | null>(null)
   const [editData, setEditData] = useState<UpdateSaleSchema>({
-    client_id: '',
+    client_id: undefined,
     sales_assistant_id: '',
-    status: '',
     paid_amount: 0,
     items: [],
   })
@@ -145,7 +146,9 @@ export default function Sale() {
     created_at: '',
     updated_at: '',
   })
-  const [selectedSaleForEdit, setSelectedSaleForEdit] = useState<Sale | null>(null)
+  const [selectedSaleForEdit, setSelectedSaleForEdit] = useState<Sale | null>(
+    null
+  )
 
   // Helper function to get product by ID
   const getProductById = (productId: string) => {
@@ -200,7 +203,6 @@ export default function Sale() {
     setEditData({
       client_id: sale?.client_id?._id || '',
       sales_assistant_id: sale?.sales_assistant_id?._id || '',
-      status: sale?.status || '',
       paid_amount: paidAmount,
       items:
         sale?.items?.map((item) => ({
@@ -223,9 +225,8 @@ export default function Sale() {
     setIsEditModalOpen(false)
     setSelectedSaleForEdit(null)
     setEditData({
-      client_id: '',
+      client_id: undefined,
       sales_assistant_id: '',
-      status: '',
       paid_amount: 0,
       items: [],
     })
@@ -248,16 +249,6 @@ export default function Sale() {
 
   const handleSaveChanges = async () => {
     if (!selectedSaleForEdit) return
-
-    // Validation
-    if (
-      !editData.client_id ||
-      !editData.sales_assistant_id ||
-      !editData.status
-    ) {
-      toast.error("Barcha majburiy maydonlarni to'ldiring")
-      return
-    }
 
     if (editData.paid_amount < 0) {
       toast.error("To'langan summa manfiy bo'lmasligi kerak")
@@ -288,23 +279,27 @@ export default function Sale() {
     }
 
     const updatePayload: UpdateSaleSchema = {
-      client_id: editData.client_id,
       sales_assistant_id: editData.sales_assistant_id,
-      status: editData.status,
       paid_amount: editData.paid_amount,
       items: editData.items,
     }
 
     await handleRequest({
       request: () =>
-        updateSale({ id: selectedSaleForEdit._id, data: updatePayload }).unwrap(),
+        updateSale({
+          id: selectedSaleForEdit._id,
+          data: updatePayload,
+        }).unwrap(),
       onSuccess: () => {
         toast.success('Sotuv muvaffaqiyatli yangilandi!')
         refetchSales()
         closeEditModal()
       },
       onError: (err) => {
-        toast.error(err?.message || err?.data?.message || 'Xatolik yuz berdi')
+        console.log(err)
+        toast.error(
+          err?.message || err?.data?.error?.msg || 'Xatolik yuz berdi'
+        )
       },
     })
   }
@@ -453,22 +448,23 @@ export default function Sale() {
               ))
             ) : data?.data?.length ? (
               data.data.map((o) => (
-                <tr key={o._id} className="hover:bg-[#F9F9F9]">
-                  <td className="px-6 py-4 text-center whitespace-nowrap">
-                    <div
-                      onClick={() => {
-                        setSelectedSale(o)
-                        setOpen(true)
-                      }}
-                      className="text-sm text-[#18181B] underline cursor-pointer"
-                    >
+                <tr key={o._id}
+                   onClick={() => {
+                     setSelectedSale(o)
+                     setOpen(true)
+                   }}
+                 className="hover:bg-[#F9F9F9]">
+                  <td
+                    className="px-6 py-4 text-center whitespace-nowrap"
+                  >
+                    <div className="text-sm text-[#18181B] cursor-pointer">
                       {o?.payments?._id || 'N/A'}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm text-[#18181B]">
                       {o?.created_at
-                        ? format(new Date(o.created_at), 'dd.MM.yyyy')
+                        ? dayjs.utc(o.created_at).format('DD.MM.YYYY')
                         : 'N/A'}
                     </div>
                   </td>
@@ -485,21 +481,27 @@ export default function Sale() {
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm">
-                      {money(o?.payments?.debt_amount, 'debt' , "so'm")}
+                      {money(o?.payments?.debt_amount, 'debt', "so'm")}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <div className="text-sm text-[#18181B]">
-                      {money(o?.payments?.total_amount, 'neutral' , "so'm")}
+                      {money(o?.payments?.total_amount, 'neutral', "so'm")}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <td onClick={(e) => e.stopPropagation()} className="px-6 py-4 text-center whitespace-nowrap">
                     <Popover
                       open={openPopover === o._id}
-                      onOpenChange={(open) => setOpenPopover(open ? o._id : null)}
+                      onOpenChange={(open) =>{
+                        setOpenPopover(open ? o._id : null)
+                      }}
                     >
                       <PopoverTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </PopoverTrigger>
@@ -600,32 +602,13 @@ export default function Sale() {
                   className="bg-gray-50 cursor-not-allowed"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={editData.status}
-                  onValueChange={(value) =>
-                    setEditData((prev) => ({ ...prev, status: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status tanlang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="paid_amount">To'langan summa</Label>
                 <Input
                   id="paid_amount"
                   type="text"
-                  value={editData.paid_amount}
+                  value={editData.paid_amount.toLocaleString('ru-RU')}
                   onChange={(e) => handlePaidAmountChange(e.target.value)}
                   placeholder="To'langan summa"
                 />

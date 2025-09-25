@@ -25,12 +25,24 @@ import { Link, useLocation } from 'react-router-dom'
 
 import { Package, Store, UserRound } from 'lucide-react'
 import { clearAuthTokens } from '@/utils/auth'
-import getSalesBalance from './getSalesBalance'
+import { useGetBranchByIdQuery } from '@/store/branch/branch.api'
+import { useGetUser } from '@/hooks/useGetUser'
 
 const HIDE_SIDEBAR_ROUTES = ['/auth/login']
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation()
+  const me = useGetUser()
+  
+  // Sales balance queryni bu yerda chaqiramiz
+  const { data: branchData } = useGetBranchByIdQuery(
+    me?.branch_id._id as string,
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      skip: !me?.branch_id._id,
+    }
+  )
 
   const hideSidebar = HIDE_SIDEBAR_ROUTES.includes(pathname)
 
@@ -127,7 +139,9 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 />
               </div>
             </div>
-            <p className="font-bold">Sotuv Balans : {getSalesBalance()}</p>
+            <p className="font-bold">
+              Sotuv Balans : {branchData?.data?.sales_balance || 0}
+            </p>
           </div>
         </header>
         <main className="px-5 py-2">{children}</main>

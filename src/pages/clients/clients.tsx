@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { TableSkeleton } from '../../components/ui/table-skeleton'
 import AddClientDialog from './AddClientDialog'
 import money from '../selling/components/money'
+import { formatPhone } from '@/utils/formatPhone'
 
 function Clients() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -121,7 +122,7 @@ function Clients() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="text-sm text-[#18181B]">
-                      {c.phone || 'Mavjud emas'}
+                      {formatPhone(c.phone)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">

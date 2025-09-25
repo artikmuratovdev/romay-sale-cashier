@@ -11,13 +11,21 @@ export interface ClientResponse {
   }
 }
 
+export interface CloseDebtResponse {
+  success?: boolean
+  msg?: string
+  statusCode?: number
+  error?: string
+  message?: string
+}
+
 export interface ClientRes {
   success: boolean
   data: {
     debt: {
       currency: string
       total_amount: number
-      sale_amount:number
+      sale_amount: number
     }
     _id: string
     username: string

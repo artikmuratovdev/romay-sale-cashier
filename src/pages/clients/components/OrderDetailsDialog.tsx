@@ -103,7 +103,7 @@ export default function OrderDetailsDialog({ open, setOpen, orderData }: Props) 
           {/* Debt Amount */}
           <div>
             <p className="text-sm text-gray-500">Qarzdorlik</p>
-            <p className="font-medium text-red-600">
+            <p className={`font-medium ${orderData.payments.debt_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {orderData.payments.debt_amount || 0}{' '}
               {orderData.payments.currency || "so'm"}
             </p>
