@@ -20,7 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useHandleRequest } from '@/hooks/use-handle-request'
-import { useGetOneClientQuery, useCloseDebtMutation } from '@/store/clients/clients.api'
+import {
+  useCloseDebtMutation,
+  useGetOneClientQuery,
+} from '@/store/clients/clients.api'
 import { useGetAllProductsQuery } from '@/store/product/product.api'
 import {
   useDeleteSaleMutation,
@@ -225,7 +228,9 @@ export default function ClientDetails() {
         closeDebtModal()
       },
       onError: (err) => {
-        toast.error(err?.message || err?.data?.error?.msg || 'Xatolik yuz berdi')
+        toast.error(
+          err?.message || err?.data?.error?.msg || 'Xatolik yuz berdi'
+        )
       },
     })
   }
@@ -365,136 +370,200 @@ export default function ClientDetails() {
       <h1 className="text-[30px] font-semibold text-[#09090B] mb-4">
         Mijoz haqida
       </h1>
-      <div className="border border-[#E4E4E7] rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
-          <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Info title="Ismi" value={data?.data?.username || ''} />
-            <Info title="segmenti" value={data?.data?.customer_tier || ''} />
-            <Info title="Filial" value={data?.data?.branch_id?.name || ''} />
-            <Info title="Phone Number" value={formatPhone(data?.data?.phone)} />
-            <Info title="Kasbi" value={data?.data?.profession || ''} />
-            <Info title="Mijoz Manzili" value={data?.data?.address || ''} />
+      <div className="border border-[#E4E4E7] rounded-lg p-6 bg-white shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Info
+              title="Mijoz ismi"
+              value={data?.data?.username || "Noma'lum"}
+            />
+            <Info
+              title="Mijoz segmenti"
+              value={data?.data?.customer_tier || 'Standart'}
+            />
+            <Info
+              title="Filial"
+              value={data?.data?.branch_id?.name || "Noma'lum"}
+            />
+            <Info
+              title="Telefon raqami"
+              value={formatPhone(data?.data?.phone) || 'Mavjud emas'}
+            />
+            <Info
+              title="Kasbi"
+              value={data?.data?.profession || "Ko'rsatilmagan"}
+            />
+            <Info
+              title="Manzil"
+              value={data?.data?.address || "Manzil ko'rsatilmagan"}
+            />
           </div>
-          <div className="md:col-span-1 flex flex-col gap-8">
-            <div className="rounded-md border border-[#E4E4E7] p-5">
-              <div className="text-sm text-[#71717A]">Qarz</div>
-              <div className="text-[28px] font-semibold">
-                {money(data?.data?.debt?.total_amount, 'debt', "so'm")}
+          <div className="lg:col-span-1 flex flex-col gap-4">
+            <div className="rounded-lg border border-[#E4E4E7] p-5 bg-gradient-to-r from-red-50 to-orange-50">
+              <div className="text-sm font-medium text-[#71717A] mb-2">
+                Umumiy qarz
+              </div>
+              <div className="text-2xl font-bold text-red-600 mb-1">
+                {money(data?.data?.debt?.total_amount || 0, 'debt', "so'm")}
+              </div>
+              <div className="text-xs text-gray-500">
+                Barcha buyurtmalar bo'yicha
               </div>
             </div>
-            <button
+            <Button
               onClick={() => setIsDebtModalOpen(true)}
-              className="bg-teal-600 text-white px-4 py-2 rounded-md"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-lg font-medium shadow-sm transition-colors"
+              disabled={
+                !data?.data?.debt?.total_amount ||
+                data?.data?.debt?.total_amount <= 0
+              }
             >
-              Qarzni to'lash
-            </button>
+              💰 Qarzni to'lash
+            </Button>
+            <div className="text-xs text-gray-500 text-center">
+              Qarz miqdori:{' '}
+              {data?.data?.debt?.total_amount || 0 > 0 ? 'Mavjud' : "Yo'q"}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Orders table */}
-      <div className="border border-[#E4E4E7] rounded-lg overflow-hidden">
-        <div className="px-6 py-3 font-medium text-[#18181B] border-b">
-          Buyurtmalari
+      <div className="border border-[#E4E4E7] rounded-lg overflow-hidden bg-white shadow-sm">
+        <div className="px-6 py-4 font-semibold text-[#18181B] border-b bg-gray-50">
+          Buyurtmalar tarixi
+          <span className="ml-2 text-sm font-normal text-gray-600">
+            ({client_items?.data?.length || 0} ta buyurtma)
+          </span>
         </div>
-        <table className="w-full">
-          <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
-            <tr>
-              <th className="px-6 py-3 text-center font-medium">
-                Buyurtma sanasi
-              </th>
-              <th className="px-6 py-3 text-center font-medium">
-                Buyurtma raqami
-              </th>
-              <th className="px-6 py-3 text-center font-medium">
-                Umumiy to'lov summasi
-              </th>
-              <th className="px-6 py-3 text-center font-medium">
-                To'lov qilingan summa
-              </th>
-              <th className="px-6 py-3 text-center font-medium">Qarzdorlik</th>
-              <th className="px-6 py-3 text-center font-medium">Amallar</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#E4E4E7]">
-            {client_items?.data?.map((o) => (
-              <tr key={o._id} className="hover:bg-[#F9F9F9]">
-                <td className="px-6 py-4 text-center whitespace-nowrap">
-                  <div className="text-sm text-[#18181B]">
-                    {o?.created_at
-                      ? format(new Date(o.created_at), 'dd.MM.yyyy')
-                      : 'N/A'}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-center whitespace-nowrap">
-                  <button
-                    onClick={() => openOrderDetails(o)}
-                    className="text-sm underline cursor-pointer transition-colors"
-                  >
-                    {o?.payments?._id || 'N/A'}
-                  </button>
-                </td>
-                <td className="px-6 py-4 text-center whitespace-nowrap">
-                  <div className="text-sm text-[#18181B]">
-                    {money(o?.payments?.total_amount, 'neutral', "so'm")}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-center whitespace-nowrap">
-                  <div className="text-sm text-[#18181B]">
-                    {money(o?.payments?.paid_amount, 'pos', "so'm")}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-center whitespace-nowrap">
-                  <div className="text-sm">
-                    {money(o?.payments?.debt_amount, 'debt', "so'm")}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-center whitespace-nowrap">
-                  <Popover
-                    open={openPopover === o._id}
-                    onOpenChange={(open) => setOpenPopover(open ? o._id : null)}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-56 p-2" align="end">
-                      <div className="space-y-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                          onClick={() => openEditModal(o)}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Yangilash
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() =>
-                            openDeleteModal(o._id, o?.payments?._id || '')
-                          }
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          O'chirish
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </td>
-              </tr>
-            )) || (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] table-fixed">
+            <colgroup>
+              <col className="w-[16%]" />
+              <col className="w-[18%]" />
+              <col className="w-[16%]" />
+              <col className="w-[16%]" />
+              <col className="w-[16%]" />
+              <col className="w-[10%]" />
+            </colgroup>
+            <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                  Buyurtmalar topilmadi
-                </td>
+                <th className="px-4 py-3 text-center font-medium">Sana</th>
+                <th className="px-4 py-3 text-center font-medium">
+                  Buyurtma №
+                </th>
+                <th className="px-4 py-3 text-center font-medium">
+                  Umumiy summa
+                </th>
+                <th className="px-4 py-3 text-center font-medium">To'langan</th>
+                <th className="px-4 py-3 text-center font-medium">Qarz</th>
+                <th className="px-4 py-3 text-center font-medium">Amallar</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E4E4E7]">
+              {client_items?.data?.map((o) => (
+                <tr
+                  key={o._id}
+                  className="hover:bg-[#F9F9F9] transition-colors"
+                >
+                  <td className="px-4 py-4 text-center">
+                    <div className="text-sm text-[#18181B] font-medium">
+                      {o?.created_at
+                        ? format(new Date(o.created_at), 'dd.MM.yyyy')
+                        : 'N/A'}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {o?.created_at
+                        ? format(new Date(o.created_at), 'HH:mm')
+                        : ''}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <button
+                      onClick={() => openOrderDetails(o)}
+                      className="inline-flex items-center px-2 py-1 text-xs font-mono rounded-md bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition-colors"
+                      title="Buyurtma tafsilotlarini ko'rish"
+                    >
+                      #{(o?.payments?._id || 'N/A').toString().slice(-8)}
+                    </button>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="text-sm font-semibold text-[#18181B]">
+                      {money(o?.payments?.total_amount || 0, 'neutral', "so'm")}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="text-sm font-semibold text-green-600">
+                      {money(o?.payments?.paid_amount || 0, 'pos', "so'm")}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="text-sm font-semibold">
+                      {money(o?.payments?.debt_amount || 0, 'debt', "so'm")}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <Popover
+                      open={openPopover === o._id}
+                      onOpenChange={(open) =>
+                        setOpenPopover(open ? o._id : null)
+                      }
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+                        >
+                          <MoreHorizontal className="h-4 w-4 text-gray-600" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-56 p-2 shadow-lg"
+                        align="end"
+                      >
+                        <div className="space-y-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => openEditModal(o)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Yangilash
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() =>
+                              openDeleteModal(o._id, o?.payments?._id || '')
+                            }
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            O'chirish
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </td>
+                </tr>
+              )) || (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="text-lg">📋</div>
+                      <div>Buyurtmalar topilmadi</div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Dialog
@@ -846,30 +915,103 @@ export default function ClientDetails() {
       </Dialog>
 
       <Dialog open={isDebtModalOpen} onOpenChange={setIsDebtModalOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              Qarzni to'lash
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              💰 Qarzni to'lash
             </DialogTitle>
           </DialogHeader>
 
-          <div className="mt-5">
-            <Input value={debtAmount}
-              onChange={(e) => setDebtAmount(e.target.value)}
-              type="number" placeholder="Qarzni to'lash" />
-            <div className="flex gap-2 mt-2 justify-end">
+          <div className="space-y-4">
+            {/* Current debt display */}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="text-sm text-red-700 font-medium mb-1">
+                Umumiy qarz miqdori
+              </div>
+              <div className="text-xl font-bold text-red-800">
+                {money(data?.data?.debt?.total_amount || 0, 'debt', "so'm")}
+              </div>
+            </div>
+
+            {/* Payment input */}
+            <div className="space-y-2">
+              <Label htmlFor="debtAmount" className="text-sm font-medium">
+                To'lanadigan summa
+              </Label>
+              <Input
+                id="debtAmount"
+                value={debtAmount}
+                onChange={(e) => setDebtAmount(e.target.value)}
+                type="number"
+                placeholder="To'lanadigan summa kiriting"
+                className="text-lg font-semibold"
+                min="0"
+                max={data?.data?.debt?.total_amount || 0}
+              />
+              <div className="text-xs text-gray-500">
+                Maksimal:{' '}
+                {money(data?.data?.debt?.total_amount || 0, 'debt', "so'm")}
+              </div>
+            </div>
+
+            {/* Quick amount buttons */}
+            <div className="grid grid-cols-3 gap-2">
               <Button
-                variant="default"
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setDebtAmount(
+                    ((data?.data?.debt?.total_amount || 0) / 4).toString()
+                  )
+                }
+                className="text-xs"
+              >
+                25%
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setDebtAmount(
+                    ((data?.data?.debt?.total_amount || 0) / 2).toString()
+                  )
+                }
+                className="text-xs"
+              >
+                50%
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setDebtAmount(
+                    (data?.data?.debt?.total_amount || 0).toString()
+                  )
+                }
+                className="text-xs"
+              >
+                100%
+              </Button>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-3 pt-4 border-t">
+              <Button
+                variant="outline"
                 onClick={closeDebtModal}
-                className="text-white bg-red-500 hover:text-red-500 hover:bg-white hover:border-red-500 border-2"
+                className="flex-1"
               >
                 Bekor qilish
               </Button>
               <Button
-                variant="default"
-                className="text-white bg-green-500 hover:text-green-500 hover:bg-white hover:border-green-500 border-2"
                 onClick={handleCloseDebt}
-                disabled={isClosingDebt}
+                disabled={
+                  isClosingDebt || !debtAmount || parseFloat(debtAmount) <= 0
+                }
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
               >
                 {isClosingDebt ? "To'lanmoqda..." : "To'lash"}
               </Button>
@@ -895,9 +1037,14 @@ export default function ClientDetails() {
 
 function Info({ title, value }: { title: string; value: string }) {
   return (
-    <div className="p-0">
-      <div className="text-sm text-[#71717A]">{title}</div>
-      <div className="text-[16px] font-semibold text-[#18181B]">{value}</div>
+    <div className="p-3 border border-gray-200 rounded-lg bg-gray-50/50">
+      <div className="text-sm font-medium text-[#71717A] mb-1">{title}</div>
+      <div
+        className="text-base font-semibold text-[#18181B] break-words"
+        title={value}
+      >
+        {value?.length > 30 ? value.substring(0, 30) + '...' : value}
+      </div>
     </div>
   )
 }

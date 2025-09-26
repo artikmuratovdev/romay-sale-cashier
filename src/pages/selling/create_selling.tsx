@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react'
-import { Input } from '../../components/ui/input'
-import { Check, X } from 'lucide-react'
-import { Card, CardContent } from '../../components/ui/card'
-import { Label } from '../../components/ui/label'
-import { Button } from '../../components/ui/button'
-import { useDispatch, useSelector } from 'react-redux'
-import { resetSaleData, triggerRefetch } from '@/store/slice/Sale.slice'
-import { useCreateSaleMutation } from '@/store/sales/salesApi'
-import { toast } from 'sonner'
 import { useHandleRequest } from '@/hooks/use-handle-request'
-import Sale_Table from './Table'
-import SearchInput from './SearchInput'
-import type { RootState } from '@/store/store'
-import { ClientCombobox } from './ClientCombobox'
 import { useGetUser } from '@/hooks/useGetUser'
-import { AssistantCombobox } from './AssistentCombobox'
-import { useNavigate } from 'react-router-dom'
+import { useCreateSaleMutation } from '@/store/sales/salesApi'
 import type { CreateSale } from '@/store/sales/types'
+import { resetSaleData, triggerRefetch } from '@/store/slice/Sale.slice'
+import type { RootState } from '@/store/store'
+import { Check, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent } from '../../components/ui/card'
+import { Input } from '../../components/ui/input'
+import { Label } from '../../components/ui/label'
+import { AssistantCombobox } from './AssistentCombobox'
+import { ClientCombobox } from './ClientCombobox'
+import SearchInput from './SearchInput'
+import Sale_Table from './Table'
 
 export type Product = {
   id: string
@@ -80,7 +80,7 @@ export default function Create_selling() {
         name: p.product.name,
         price: p.product.price,
         qty: 1,
-        img: p.product.images[0],
+        img: p.product.images?.[0] || '/package.svg',
         stock: p.product_count,
         barcode: p.product_barcode,
       }))
@@ -187,27 +187,42 @@ export default function Create_selling() {
 
       {products.length > 0 ? (
         <div
-          className={`border rounded-lg overflow-hidden ${
+          className={`border rounded-lg overflow-hidden bg-white shadow-sm ${
             validationErrors.products ? 'border-red-500' : 'border-[#E4E4E7]'
           }`}
         >
           <Sale_Table />
         </div>
       ) : (
-        <Card className={validationErrors.products ? 'border-red-500' : ''}>
-          <div className="py-7 flex items-center justify-center flex-col">
-            <div className="mb-4">
-              <img src="/empty.svg" alt="" />
+        <Card
+          className={`${validationErrors.products ? 'border-red-500' : ''} bg-white`}
+        >
+          <div className="py-12 flex items-center justify-center flex-col">
+            <div className="mb-6 w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
+              <img
+                src="/empty.svg"
+                alt="Empty state"
+                className="w-10 h-10"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                  e.currentTarget.parentElement!.innerHTML = `
+                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 10H6L5 9z"></path>
+                    </svg>
+                  `
+                }}
+              />
             </div>
-            <h2 className="text-[20px] font-semibold text-slate-800">
+            <h2 className="text-xl font-semibold text-slate-800 mb-2">
               Hozircha mahsulotlar yo'q
             </h2>
-            <p className="text-[14px] text-slate-600">
-              Mahsulotlar kiritilishi bilan bu yerda ko'rinadi
+            <p className="text-sm text-slate-600 text-center max-w-sm">
+              Yuqoridagi qidiruv orqali mahsulotlarni qo'shing va ular bu yerda
+              ko'rinadi
             </p>
             {validationErrors.products && (
-              <p className="text-red-500 text-sm mt-2">
-                Kamida bitta mahsulot qo'shing
+              <p className="text-red-500 text-sm mt-4 bg-red-50 px-4 py-2 rounded-md">
+                ⚠️ Kamida bitta mahsulot qo'shing
               </p>
             )}
           </div>
@@ -220,45 +235,45 @@ export default function Create_selling() {
             <div className="flex flex-col gap-2">
               <Label>Mijoz (ixtiyoriy)</Label>
               <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <ClientCombobox />
-              </div>
-              {ClientId && (
-                <Button
-                variant="outline"
-                size="sm"
-                onClick={() => dispatch(resetSaleData())}
-                >
-                <X className='text-red-500' />
-                </Button>
-              )}
+                <div className="flex-1">
+                  <ClientCombobox />
+                </div>
+                {ClientId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => dispatch(resetSaleData())}
+                  >
+                    <X className="text-red-500" />
+                  </Button>
+                )}
               </div>
             </div>
             <div className="flex flex-col gap-2">
               <Label
-              className={validationErrors.assistant ? 'text-red-500' : ''}
+                className={validationErrors.assistant ? 'text-red-500' : ''}
               >
-              Assistent {validationErrors.assistant && '*'}
+                Assistent {validationErrors.assistant && '*'}
               </Label>
               <div className="flex items-center gap-2">
-              <div
-                className={`flex-1 ${
-                validationErrors.assistant
-                  ? 'border-red-500 rounded-md border'
-                  : ''
-                }`}
-              >
-                <AssistantCombobox />
-              </div>
-              {AssistantId && (
-                <Button
-                variant="outline"
-                size="sm"
-                onClick={() => dispatch(resetSaleData())}
+                <div
+                  className={`flex-1 ${
+                    validationErrors.assistant
+                      ? 'border-red-500 rounded-md border'
+                      : ''
+                  }`}
                 >
-                <X className='text-red-500' />
-                </Button>
-              )}
+                  <AssistantCombobox />
+                </div>
+                {AssistantId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => dispatch(resetSaleData())}
+                  >
+                    <X className="text-red-500" />
+                  </Button>
+                )}
               </div>
               {validationErrors.assistant && (
                 <p className="text-red-500 text-[14px]">Assistentni tanlang</p>

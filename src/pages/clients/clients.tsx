@@ -2,13 +2,13 @@ import { TablePagination } from '@/components/TablePagination'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useGetClientsQuery } from '@/store/clients/clients.api'
+import { formatPhone } from '@/utils/formatPhone'
 import { AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TableSkeleton } from '../../components/ui/table-skeleton'
-import AddClientDialog from './AddClientDialog'
 import money from '../selling/components/money'
-import { formatPhone } from '@/utils/formatPhone'
+import AddClientDialog from './AddClientDialog'
 
 function Clients() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -92,58 +92,86 @@ function Clients() {
           </p>
         </div>
       ) : (
-        <div className="border border-[#E4E4E7] rounded-lg overflow-x-auto">
-          <table className="w-full">
+        <div className="border border-[#E4E4E7] rounded-lg overflow-x-auto bg-white shadow-sm">
+          <table className="w-full min-w-[800px] table-fixed">
+            <colgroup>
+              <col className="w-[20%]" />
+              <col className="w-[18%]" />
+              <col className="w-[15%]" />
+              <col className="w-[15%]" />
+              <col className="w-[15%]" />
+              <col className="w-[17%]" />
+            </colgroup>
             <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
               <tr>
-                <th className="px-6 py-3 text-left font-medium">Ismi</th>
-                <th className="px-6 py-3 text-center font-medium">
-                  Telefon raqami
+                <th className="px-4 py-3 text-left font-medium">Mijoz</th>
+                <th className="px-4 py-3 text-center font-medium">Telefon</th>
+                <th className="px-4 py-3 text-center font-medium">Segment</th>
+                <th className="px-4 py-3 text-center font-medium">Qarz</th>
+                <th className="px-4 py-3 text-center font-medium">
+                  Buyurtmalar
                 </th>
-                <th className="px-6 py-3 text-center font-medium">Segment</th>
-                <th className="px-6 py-3 text-center font-medium">Qarz</th>
-                <th className="px-6 py-3 text-center font-medium">
-                  Buyurtmalar soni
-                </th>
-                <th className="px-6 py-3 text-center font-medium">Filial</th>
+                <th className="px-4 py-3 text-center font-medium">Filial</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E4E7]">
               {clientsData?.map((c) => (
                 <tr
                   key={c._id}
-                  className="hover:bg-[#F9F9F9] cursor-pointer"
+                  className="hover:bg-[#F9F9F9] cursor-pointer transition-colors"
                   onClick={() => navigate(`client/${c._id}`)}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-[#18181B]">
-                      {c.username}
+                  <td className="px-4 py-4">
+                    <div className="flex flex-col min-w-0">
+                      <div
+                        className="text-sm font-medium text-[#18181B] truncate"
+                        title={c?.username || "Noma'lum mijoz"}
+                      >
+                        {c?.username || "Noma'lum mijoz"}
+                      </div>
+                      {c?.customer_tier && (
+                        <div className="text-xs text-gray-500 truncate">
+                          {c.customer_tier}
+                        </div>
+                      )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm text-[#18181B]">
-                      {formatPhone(c.phone)}
+                  <td className="px-4 py-4 text-center">
+                    <div className="text-sm text-[#18181B] font-mono">
+                      {formatPhone(c?.phone) || '—'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm text-[#18181B]">
-                      {c.profession || 'Mavjud emas'}
+                  <td className="px-4 py-4 text-center">
+                    <span
+                      className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-blue-50 text-blue-700 border border-blue-200 max-w-full"
+                      title={c?.profession || 'Mavjud emas'}
+                    >
+                      <span className="truncate">
+                        {c?.profession?.length > 12
+                          ? c.profession.substring(0, 12) + '...'
+                          : c?.profession || 'Mavjud emas'}
+                      </span>
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="text-sm font-semibold">
+                      {money(c?.debt?.total_amount || 0, 'debt', "so'm")}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm">
-                      {money(c.debt.total_amount, 'debt' , "so'm")}
-                    </div>
+                  <td className="px-4 py-4 text-center">
+                    <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 font-medium">
+                      {c?.sales_count || 0}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm text-[#18181B]">
-                      {c.sales_count || 0}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm text-[#18181B]">
-                      {c.branch_id.name || "Noma'lum"}
-                    </div>
+                  <td className="px-4 py-4 text-center">
+                    <span
+                      className="text-sm text-[#18181B] truncate block"
+                      title={c?.branch_id?.name || "Noma'lum"}
+                    >
+                      {c?.branch_id?.name?.length > 15
+                        ? c.branch_id.name.substring(0, 15) + '...'
+                        : c?.branch_id?.name || "Noma'lum"}
+                    </span>
                   </td>
                 </tr>
               ))}

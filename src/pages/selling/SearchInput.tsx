@@ -5,16 +5,30 @@ import type { ProductWarehouseItem } from '@/store/product/types'
 import { addToAllProduct, addToFilteredProduct } from '@/store/slice/Sale.slice'
 import type { RootState } from '@/store/store'
 import { ScanBarcode } from 'lucide-react'
-import { useEffect, useState, useRef } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
-function SearchInput() {
+const SearchInput = memo(() => {
   const [focus, setFocus] = useState(true)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({})
+  const [imageLoadingStates, setImageLoadingStates] = useState<{
+    [key: string]: boolean
+  }>({})
   const inputRef = useRef<HTMLInputElement>(null)
   const me = useGetUser()
   const dispatch = useDispatch()
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [search])
 
   const shouldRefetch = useSelector(
     (state: RootState) => state.sale.shouldRefetch
@@ -31,9 +45,11 @@ function SearchInput() {
     },
     {
       skip: !me?.branch_id._id,
+      refetchOnMountOrArgChange: false, // Prevent unnecessary refetches
+      refetchOnFocus: false, // Don't refetch when window gains focus
+      refetchOnReconnect: true, // Only refetch on reconnect
     }
   )
-  console.log('Products:', inputRef.current?.value)
 
   useEffect(() => {
     if (products?.data && Array.isArray(products.data)) {
@@ -41,8 +57,9 @@ function SearchInput() {
     }
   }, [products, dispatch])
 
+  // Optimize refetch - only refetch when shouldRefetch changes, not on every render
   useEffect(() => {
-    if (me?.branch_id._id) {
+    if (shouldRefetch && me?.branch_id._id) {
       refetch()
     }
   }, [shouldRefetch, refetch, me?.branch_id._id])
@@ -58,8 +75,10 @@ function SearchInput() {
   )
 
   // Filter products based on search term and exclude already selected products
-  const allProducts =
-    allProductsFromRedux?.filter((p) => {
+  const allProducts = useMemo(() => {
+    if (!allProductsFromRedux) return []
+
+    return allProductsFromRedux.filter((p) => {
       // First check if product is already in filtered products (cart)
       const isAlreadySelected = filteredProductsFromRedux.some(
         (filtered) => filtered._id === p._id
@@ -69,7 +88,7 @@ function SearchInput() {
         return false // Don't show products that are already selected
       }
 
-      const searchTerm = search.toLowerCase().trim()
+      const searchTerm = debouncedSearch.toLowerCase().trim()
 
       // If no search term, show all available products
       if (!searchTerm) return true
@@ -83,7 +102,8 @@ function SearchInput() {
         : false
 
       return nameMatch || barcodeMatch
-    }) || []
+    })
+  }, [allProductsFromRedux, filteredProductsFromRedux, debouncedSearch])
 
   const handleProductSelect = (product: ProductWarehouseItem) => {
     if (product.product_count <= 0) {
@@ -107,6 +127,23 @@ function SearchInput() {
   const handleBarcodeClick = () => {
     focusInput()
   }
+
+  // Handle image error
+  const handleImageError = useCallback((productId: string) => {
+    setImageErrors((prev) => ({ ...prev, [productId]: true }))
+    setImageLoadingStates((prev) => ({ ...prev, [productId]: false }))
+  }, [])
+
+  // Handle image load start
+  const handleImageLoadStart = useCallback((productId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [productId]: true }))
+  }, [])
+
+  // Handle image load success
+  const handleImageLoadSuccess = useCallback((productId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [productId]: false }))
+    setImageErrors((prev) => ({ ...prev, [productId]: false }))
+  }, [])
 
   // Show loading state
   if (isLoading || error) {
@@ -179,14 +216,24 @@ function SearchInput() {
                     onMouseDown={() => handleProductSelect(p)}
                   >
                     <td className="px-7 py-3 text-left font-medium">
-                      <img
-                        className="aspect-square w-10 h-10 object-cover rounded"
-                        src={p.product?.images?.[0] || '/placeholder-image.png'}
-                        alt={p.product?.name || 'Product'}
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder-image.png'
-                        }}
-                      />
+                      <div className="relative w-12 h-12">
+                        {imageLoadingStates[p._id] && (
+                          <div className="absolute inset-0 bg-gray-200 animate-pulse rounded"></div>
+                        )}
+                        <img
+                          className="aspect-square w-full h-full object-cover rounded border border-gray-200"
+                          src={
+                            imageErrors[p._id] || !p.product?.images?.[0]
+                              ? '/package.svg'
+                              : p.product.images[0]
+                          }
+                          alt={p.product?.name || 'Product'}
+                          onLoadStart={() => handleImageLoadStart(p._id)}
+                          onLoad={() => handleImageLoadSuccess(p._id)}
+                          onError={() => handleImageError(p._id)}
+                          loading="lazy"
+                        />
+                      </div>
                     </td>
                     <td className="px-7 py-3 text-center font-medium">
                       {p.product?.name || 'N/A'}
@@ -210,7 +257,7 @@ function SearchInput() {
                     colSpan={5}
                     className="px-7 py-6 text-center text-gray-500"
                   >
-                    {search
+                    {debouncedSearch
                       ? 'Hech qanday mahsulot topilmadi'
                       : 'Mahsulotlar mavjud emas'}
                   </td>
@@ -222,6 +269,8 @@ function SearchInput() {
       </div>
     </div>
   )
-}
+})
+
+SearchInput.displayName = 'SearchInput'
 
 export default SearchInput

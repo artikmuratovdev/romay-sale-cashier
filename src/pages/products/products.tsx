@@ -73,15 +73,15 @@ function ProductPage() {
     const searchTerm = search.toLowerCase().trim()
 
     return productsData.filter((product) => {
-      const productName = product.product.name.toLowerCase()
+      const productName = (product.product?.name || '').toLowerCase()
       const productDescription = (
-        product.product.description || ''
+        product.product?.description || ''
       ).toLowerCase()
       const productBarcode = (product.product_barcode || '').toLowerCase()
       const categoryName = getCategoryName(
-        product.product.category_id
+        product.product?.category_id
       ).toLowerCase()
-      const productPrice = product.product.price.toString()
+      const productPrice = (product.product?.price || 0).toString()
 
       return (
         productName.includes(searchTerm) ||
@@ -101,6 +101,23 @@ function ProductPage() {
   const closeModal = () => {
     setIsModalOpen(false)
     setSelectedProduct(null)
+  }
+
+  // Helper function to truncate text intelligently
+  const truncateText = (text: string, maxLength: number) => {
+    if (!text || text.length <= maxLength) return text
+    return text.substring(0, maxLength) + '...'
+  }
+
+  // Helper function to truncate product name by words
+  const truncateProductName = (name: string) => {
+    if (!name) return "Noma'lum mahsulot"
+    const words = name.split(' ')
+    if (words.length <= 4) {
+      return name
+    }
+    const truncated = words.slice(0, 4).join(' ')
+    return truncated + '...'
   }
 
   return (
@@ -146,11 +163,19 @@ function ProductPage() {
 
       {view === 'list' ? (
         <div className="border border-[#E4E4E7] rounded-lg overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[900px] table-fixed">
+            <colgroup>
+              <col className="w-[30%]" />
+              <col className="w-[12%]" />
+              <col className="w-[15%]" />
+              <col className="w-[15%]" />
+              <col className="w-[13%]" />
+              <col className="w-[15%]" />
+            </colgroup>
             <thead className="bg-[#F9F9F9] text-[#71717A] text-sm">
               <tr>
-                <th className="px-6 py-3 text-center font-medium">Nomi</th>
-                <th className="px-6 py-3 text-left font-medium">Status</th>
+                <th className="px-6 py-3 text-left font-medium">Mahsulot</th>
+                <th className="px-6 py-3 text-center font-medium">Status</th>
                 <th className="px-6 py-3 text-center font-medium">
                   Kategoriya
                 </th>
@@ -196,58 +221,98 @@ function ProductPage() {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-gray-100 rounded flex items-center justify-center">
-                          {product.product.images[0] ? (
+                        <div className="h-12 w-12 bg-gray-100 rounded-md border border-gray-200 flex items-center justify-center overflow-hidden">
+                          {product.product?.images?.[0] ? (
                             <img
                               src={product.product.images[0]}
-                              alt={product.product.name}
-                              className="h-8 w-8 object-cover"
+                              alt={product.product?.name || 'Product'}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = '/package.svg'
+                              }}
+                              loading="lazy"
                             />
                           ) : (
-                            <span className="text-gray-400">📱</span>
+                            <img
+                              src="/package.svg"
+                              alt="Default product"
+                              className="w-8 h-8 text-gray-400"
+                            />
                           )}
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-[#18181B]">
-                            {product.product.name}
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className="text-sm font-medium text-[#18181B] leading-5"
+                            style={{
+                              overflow: 'hidden',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              wordBreak: 'break-word',
+                            }}
+                            title={product.product?.name || "Noma'lum mahsulot"}
+                          >
+                            {truncateProductName(product.product?.name)}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-left">
-                      {product.product_count > 0 ? (
-                        <span className="px-2 py-1 text-xs rounded-md bg-green-100 text-green-700">
-                          mavjud
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {(product.product_count || 0) > 0 ? (
+                        <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                          mavjud ({product.product_count || 0})
                         </span>
                       ) : (
-                        <span className="px-2 py-1 text-xs rounded-md bg-red-100 text-red-700">
+                        <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
                           qolmagan
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-[#F4F4F5] text-[#18181B]">
-                        {getCategoryName(product.product.category_id)}
+                      <span
+                        className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-[#F4F4F5] text-[#18181B] max-w-full"
+                        title={getCategoryName(product.product?.category_id)}
+                      >
+                        <span className="truncate">
+                          {truncateText(
+                            getCategoryName(product.product?.category_id),
+                            15
+                          )}
+                        </span>
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="inline-flex items-center px-2 py-1 text-xs rounded-md border border-[#E4E4E7] text-[#18181B]">
-                        {product.product_barcode}
+                      <span
+                        className="inline-flex items-center px-2 py-1 text-xs rounded-md border border-[#E4E4E7] text-[#18181B] max-w-full"
+                        title={product.product_barcode || "Barcode yo'q"}
+                      >
+                        <span className="truncate font-mono">
+                          {truncateText(product.product_barcode || '—', 12)}
+                        </span>
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="text-sm text-[#18181B]">
-                        {formatUsd(product.product.price + '', product.product.currency)}
+                      <div className="text-sm font-semibold text-[#18181B]">
+                        {formatUsd(
+                          (product.product?.price || 0) + '',
+                          product.product?.currency || 'UZS'
+                        )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-[#09090B] hover:bg-gray-100"
+                    <td className="px-6 py-4 text-center">
+                      <div
+                        className="text-xs text-[#71717A] max-w-full px-2"
+                        style={{
+                          overflow: 'hidden',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          wordBreak: 'break-word',
+                        }}
+                        title={product.product?.description || "Tasnif yo'q"}
                       >
-                        {product.product.description}
-                      </Button>
+                        {truncateText(product.product?.description || '—', 30)}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -301,14 +366,15 @@ function ProductPage() {
                   onClick={() => handleProductClick(product)}
                 >
                   <CardContent className="p-3">
-                    <div className="w-full h-36 flex items-center justify-center">
+                    <div className="w-full h-36 flex items-center justify-center bg-gray-50 rounded-md border border-gray-200 overflow-hidden">
                       <img
-                        src={
-                          product.product.images[0] ||
-                          'https://media.istockphoto.com/id/184639599/photo/power-drill-with-large-bit.jpg?s=612x612&w=0&k=20&c=TJczKvZqLmWc5c5O6r86jelaUbYFLCZnwA_uWlhHOG0='
-                        }
+                        src={product.product.images?.[0] || '/package.svg'}
                         alt={product.product.name}
-                        className="max-h-full object-contain"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/package.svg'
+                        }}
+                        loading="lazy"
                       />
                     </div>
                     <div className="mt-3">

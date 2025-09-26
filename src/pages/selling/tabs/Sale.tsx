@@ -373,7 +373,7 @@ export default function Sale() {
             Buyurtmalar
           </h1>
           <Link to={'create-sale'} className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto hover:bg-white hover:text-blue-600 border-2 border-transparent bg-blue-600 text-sm sm:text-base lg:text-lg py-2.5 sm:py-3 px-4">
+            <Button className="w-full sm:w-auto hover:bg-white hover:text-teal-600 border-2 border-teal-600 bg-teal-600 text-sm sm:text-base lg:text-lg py-2.5 sm:py-3 px-4">
               Buyurtma yaratish
             </Button>
           </Link>

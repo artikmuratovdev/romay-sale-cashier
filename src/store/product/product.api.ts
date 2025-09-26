@@ -1,9 +1,9 @@
 import baseApi from '../api'
 import type {
-  GetAllProductsResponse,
-  GetAllProductsRequest,
   CreateProductRequest,
   CreateProductResponse,
+  GetAllProductsRequest,
+  GetAllProductsResponse,
 } from './types'
 
 export const productApi = baseApi.injectEndpoints({
@@ -18,6 +18,8 @@ export const productApi = baseApi.injectEndpoints({
         params,
       }),
       providesTags: ['products'],
+      // Add caching and optimization
+      keepUnusedDataFor: 300, // 5 minutes cache
     }),
     // New endpoint for sale products
     getAllSaleProducts: builder.query<
