@@ -197,7 +197,7 @@ export default function Create_selling() {
         <Card
           className={`${validationErrors.products ? 'border-red-500' : ''} bg-white`}
         >
-          <div className="py-12 flex items-center justify-center flex-col">
+          <div className="py-10 flex items-center justify-center flex-col">
             <div className="mb-6 w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
               <img
                 src="/empty.svg"

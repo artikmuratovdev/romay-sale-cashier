@@ -69,6 +69,13 @@ export interface GetAllProductsResponse {
 
 export interface GetAllProductsRequest {}
 
+export interface GetProductsInfiniteRequest {
+  branch: string
+  page?: number
+  limit?: number
+  search?: string
+}
+
 export interface CreateProductRequest {
   name: string
   description: string
