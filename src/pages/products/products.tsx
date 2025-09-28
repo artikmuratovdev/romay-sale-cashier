@@ -367,7 +367,7 @@ function ProductPage() {
                         <img
                           src={product.product.images?.[0] || '/package.svg'}
                           alt={product.product.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                           onError={(e) => {
                             e.currentTarget.src = '/package.svg'
                           }}
@@ -388,7 +388,7 @@ function ProductPage() {
                           '—'}
                       </div>
                       <div className="mt-2 text-xl font-bold text-[#09090B]">
-                        {formatUsd(product.product.price + '')}
+                        {formatUsd(product.product.price + '', product.product.currency)}
                       </div>
                     </CardContent>
                   </Card>

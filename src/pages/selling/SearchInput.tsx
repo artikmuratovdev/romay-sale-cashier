@@ -445,21 +445,6 @@ const SearchInput = memo(() => {
                     </tr>
                   ))}
 
-                  {/* Debug info row */}
-                  <tr className="w-full bg-gray-100 text-xs">
-                    <td
-                      colSpan={5}
-                      className="px-7 py-2 text-center text-gray-600"
-                    >
-                      Debug: Page {currentPage} | Items:{' '}
-                      {allLoadedProducts.length} | HasNext:{' '}
-                      {hasNextPage ? 'Yes' : 'No'} | Loading:{' '}
-                      {isLoading ? 'Yes' : 'No'} | Fetching:{' '}
-                      {isFetching ? 'Yes' : 'No'} | LoadingMore:{' '}
-                      {isLoadingMore ? 'Yes' : 'No'}
-                    </td>
-                  </tr>
-
                   {/* Loading indicator for infinite scroll */}
                   {(isFetching || isLoadingMore) && hasNextPage && (
                     <tr className="w-full">

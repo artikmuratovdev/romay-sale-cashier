@@ -197,12 +197,12 @@ export default function Create_selling() {
         <Card
           className={`${validationErrors.products ? 'border-red-500' : ''} bg-white`}
         >
-          <div className="py-10 flex items-center justify-center flex-col">
-            <div className="mb-6 w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className="py-6 flex items-center justify-center flex-col">
+            <div className="mb-2 w-30 h-30 bg-gray-100 rounded-full flex items-center justify-center">
               <img
                 src="/empty.svg"
                 alt="Empty state"
-                className="w-10 h-10"
+                className="w-24 h-24"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none'
                   e.currentTarget.parentElement!.innerHTML = `

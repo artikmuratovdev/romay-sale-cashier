@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, Package, Hash, Tag, Image as ImageIcon } from 'lucide-react'
+import { Calendar, Package, Hash, Tag } from 'lucide-react'
 import type { ProductWarehouseItem } from '@/store/product/types'
 
 type EnhancedProductDetailsModalProps = {
@@ -101,15 +101,11 @@ export function EnhancedProductDetailsModal({
           {/* Product Header */}
           <div className="flex gap-4">
             <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-              {product.product.images?.[0] ? (
-                <img
-                  src={product.product.images[0]}
-                  alt={product.product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <ImageIcon className="w-8 h-8 text-gray-400" />
-              )}
+              <img
+                src={product.product.images?.[0] || '/package.svg'}
+                alt={product.product.name}
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="flex-1 space-y-2">
               <h3 className="text-xl font-semibold text-gray-900">
