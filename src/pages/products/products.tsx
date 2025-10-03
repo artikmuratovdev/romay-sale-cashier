@@ -234,13 +234,13 @@ function ProductPage() {
                                 alt={product.product?.name || 'Product'}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  e.currentTarget.src = '/package.svg'
+                                  e.currentTarget.src = '/no_product.jpg'
                                 }}
                                 loading="lazy"
                               />
                             ) : (
                               <img
-                                src="/package.svg"
+                                src="/no_product.jpg"
                                 alt="Default product"
                                 className="w-8 h-8 text-gray-400"
                               />

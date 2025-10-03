@@ -385,7 +385,8 @@ const SearchInput = memo(() => {
       <div
         className={`absolute bg-white top-12 border-2 w-full rounded-lg z-50 shadow-lg ${focus && 'hidden'}`}
       >
-        <table className="w-full">
+        {/* Desktop table header */}
+        <table className="w-full hidden md:table">
           <thead className="text-[#71717A] text-sm border-b w-full flex justify-between sticky top-0 bg-white">
             <tr className="w-full grid grid-cols-5">
               <th className="px-7 py-3 text-left font-medium"></th>
@@ -396,9 +397,15 @@ const SearchInput = memo(() => {
             </tr>
           </thead>
         </table>
+        
+        {/* Mobile header */}
+        <div className="md:hidden sticky top-0 bg-white border-b px-4 py-3">
+          <h3 className="text-sm font-medium text-[#71717A]">Mahsulotlar</h3>
+        </div>
 
         <div ref={scrollContainerRef} className="max-h-80 overflow-y-auto">
-          <table className="w-full">
+          {/* Desktop table */}
+          <table className="w-full hidden md:table">
             <tbody className="text-[#71717A] text-sm bg-white">
               {allProducts?.length > 0 ? (
                 <>
@@ -417,7 +424,7 @@ const SearchInput = memo(() => {
                             className="aspect-square w-full h-full object-cover rounded border border-gray-200"
                             src={
                               imageErrors[p._id] || !p.product?.images?.[0]
-                                ? '/package.svg'
+                                ? '/no_product.jpg'
                                 : p.product.images[0]
                             }
                             alt={p.product?.name || 'Product'}
@@ -507,6 +514,111 @@ const SearchInput = memo(() => {
               )}
             </tbody>
           </table>
+          
+          {/* Mobile card layout */}
+          <div className="md:hidden">
+            {allProducts?.length > 0 ? (
+              <>
+                {allProducts.map((p) => (
+                  <div
+                    key={p._id}
+                    className="cursor-pointer hover:bg-gray-50 border-b border-gray-100 p-4"
+                    onTouchStart={() => handleProductSelect(p)}
+                    onClick={() => handleProductSelect(p)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative w-16 h-16 flex-shrink-0">
+                        {imageLoadingStates[p._id] && (
+                          <div className="absolute inset-0 bg-gray-200 animate-pulse rounded"></div>
+                        )}
+                        <img
+                          className="aspect-square w-full h-full object-cover rounded border border-gray-200"
+                          src={
+                            imageErrors[p._id] || !p.product?.images?.[0]
+                              ? '/no_product.jpg'
+                              : p.product.images[0]
+                          }
+                          alt={p.product?.name || 'Product'}
+                          onLoadStart={() => handleImageLoadStart(p._id)}
+                          onLoad={() => handleImageLoadSuccess(p._id)}
+                          onError={() => handleImageError(p._id)}
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">
+                          {p.product?.name || 'N/A'}
+                        </h4>
+                        <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
+                          <span className="bg-gray-100 px-2 py-1 rounded">
+                            {p.product?.barcode || 'Barcode yo\'q'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-green-600 text-sm">
+                            {p.product?.price?.toLocaleString() || 0} UZS
+                          </span>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                              p.product_count > 10
+                                ? 'bg-green-100 text-green-800'
+                                : p.product_count > 0
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            Qoldiq: {p.product_count || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Mobile loading indicator */}
+                {(isFetching || isLoadingMore) && hasNextPage && (
+                  <div className="px-4 py-4 text-center">
+                    <div className="flex items-center justify-center space-x-2 text-gray-500">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Ko'proq mahsulotlar yuklanmoqda...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Mobile manual load more button */}
+                {hasNextPage && !isLoading && !isFetching && !isLoadingMore && (
+                  <div className="px-4 py-4 text-center">
+                    <button
+                      onClick={loadMoreProducts}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                      Ko'proq yuklash
+                    </button>
+                  </div>
+                )}
+
+                {/* Mobile end of results indicator */}
+                {!hasNextPage && allProducts.length > 0 && (
+                  <div className="px-4 py-4 text-center text-gray-400 text-sm">
+                    Barcha mahsulotlar yuklandi
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="px-4 py-6 text-center text-gray-500">
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Mahsulotlar yuklanmoqda...</span>
+                  </div>
+                ) : debouncedSearch ? (
+                  'Hech qanday mahsulot topilmadi'
+                ) : (
+                  'Mahsulotlar mavjud emas'
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

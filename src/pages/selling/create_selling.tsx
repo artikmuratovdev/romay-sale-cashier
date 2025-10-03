@@ -180,14 +180,14 @@ export default function Create_selling() {
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-4">
+    <div className="px-2 sm:px-4 md:px-0">
+      <div className="flex items-center gap-2 sm:gap-4 mb-4">
         <SearchInput />
       </div>
 
       {products.length > 0 ? (
         <div
-          className={`border rounded-lg overflow-hidden bg-white shadow-sm ${
+          className={`border rounded-lg overflow-x-auto bg-white shadow-sm ${
             validationErrors.products ? 'border-red-500' : 'border-[#E4E4E7]'
           }`}
         >
@@ -197,12 +197,12 @@ export default function Create_selling() {
         <Card
           className={`${validationErrors.products ? 'border-red-500' : ''} bg-white`}
         >
-          <div className="py-6 flex items-center justify-center flex-col">
-            <div className="mb-2 w-30 h-30 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className=" px-4 flex items-center justify-center flex-col">
+            <div className="mb-2 w-20 h-20 sm:w-30 sm:h-30 bg-gray-100 rounded-full flex items-center justify-center">
               <img
                 src="/empty.svg"
                 alt="Empty state"
-                className="w-24 h-24"
+                className="w-16 h-16 sm:w-24 sm:h-24"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none'
                   e.currentTarget.parentElement!.innerHTML = `
@@ -213,15 +213,15 @@ export default function Create_selling() {
                 }}
               />
             </div>
-            <h2 className="text-xl font-semibold text-slate-800 mb-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2 text-center">
               Hozircha mahsulotlar yo'q
             </h2>
-            <p className="text-sm text-slate-600 text-center max-w-sm">
+            <p className="text-xs sm:text-sm text-slate-600 text-center max-w-sm px-4">
               Yuqoridagi qidiruv orqali mahsulotlarni qo'shing va ular bu yerda
               ko'rinadi
             </p>
             {validationErrors.products && (
-              <p className="text-red-500 text-sm mt-4 bg-red-50 px-4 py-2 rounded-md">
+              <p className="text-red-500 text-xs sm:text-sm mt-4 bg-red-50 px-4 py-2 rounded-md text-center">
                 ⚠️ Kamida bitta mahsulot qo'shing
               </p>
             )}
@@ -229,11 +229,11 @@ export default function Create_selling() {
         </Card>
       )}
 
-      <div className="grid grid-cols-2 gap-8 mt-8">
-        <Card>
-          <CardContent className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mt-4 sm:mt-6 lg:mt-8">
+        <Card className='py-6 md:py-0'>
+          <CardContent className="flex flex-col gap-3 sm:gap-4 sm:p-6">
             <div className="flex flex-col gap-2">
-              <Label>Mijoz (ixtiyoriy)</Label>
+              <Label className="text-sm sm:text-base">Mijoz (ixtiyoriy)</Label>
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <ClientCombobox />
@@ -243,15 +243,16 @@ export default function Create_selling() {
                     variant="outline"
                     size="sm"
                     onClick={() => dispatch(resetSaleData())}
+                    className="shrink-0"
                   >
-                    <X className="text-red-500" />
+                    <X className="text-red-500 w-4 h-4" />
                   </Button>
                 )}
               </div>
             </div>
             <div className="flex flex-col gap-2">
               <Label
-                className={validationErrors.assistant ? 'text-red-500' : ''}
+                className={`text-sm sm:text-base ${validationErrors.assistant ? 'text-red-500' : ''}`}
               >
                 Assistent {validationErrors.assistant && '*'}
               </Label>
@@ -270,22 +271,23 @@ export default function Create_selling() {
                     variant="outline"
                     size="sm"
                     onClick={() => dispatch(resetSaleData())}
+                    className="shrink-0"
                   >
-                    <X className="text-red-500" />
+                    <X className="text-red-500 w-4 h-4" />
                   </Button>
                 )}
               </div>
               {validationErrors.assistant && (
-                <p className="text-red-500 text-[14px]">Assistentni tanlang</p>
+                <p className="text-red-500 text-xs sm:text-[14px]">Assistentni tanlang</p>
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label className={validationErrors.payment ? 'text-red-500' : ''}>
+              <Label className={`text-sm sm:text-base ${validationErrors.payment ? 'text-red-500' : ''}`}>
                 Naqd {validationErrors.payment && '*'}
               </Label>
               <div className="relative">
                 <Input
-                  className={`py-2 px-3 pr-10 ${
+                  className={`py-2 px-3 pr-12 sm:pr-10 text-sm sm:text-base ${
                     validationErrors.payment
                       ? 'border-red-500 focus-visible:ring-red-500'
                       : ''
@@ -298,41 +300,41 @@ export default function Create_selling() {
                     setPayment(value ? Number(value) : 0)
                   }}
                 />
-                <span className="absolute right-2 top-[10px] text-[14px] text-[#71717A]">
+                <span className="absolute right-2 top-[10px] text-xs sm:text-[14px] text-[#71717A]">
                   UZS
                 </span>
               </div>
               {validationErrors.payment && (
-                <p className="text-red-500 text-[14px]">
+                <p className="text-red-500 text-xs sm:text-[14px]">
                   To'lov miqdorini kiriting
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex flex-col gap-6">
+        <Card className='py-6 md:py-0'>
+          <CardContent className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-sm sm:text-base">
                 <span>Sana: </span>
-                <span>
+                <span className="text-xs sm:text-sm">
                   {date.toLocaleDateString()} {date.toLocaleTimeString()}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-sm sm:text-base">
                 <span>Naqd: </span>
-                <span>{payment.toLocaleString()} UZS</span>
+                <span className="text-xs sm:text-sm">{payment.toLocaleString()} UZS</span>
               </div>
             </div>
             <div>
-              <div className="text-[20px] font-semibold flex items-center justify-between">
+              <div className="text-lg sm:text-[20px] font-semibold flex items-center justify-between">
                 <span>Jami:</span>
-                <span>{total.toLocaleString()} UZS</span>
+                <span className="text-base sm:text-[20px]">{total.toLocaleString()} UZS</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <span></span>
-              <Button className="bg-green-700 text-white" onClick={sendItems}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <span className="hidden sm:block"></span>
+              <Button className="bg-green-700 text-white w-full text-sm sm:text-base" onClick={sendItems}>
                 <Check size={16} className="mr-2" /> {"To'lov qilish"}
               </Button>
             </div>
