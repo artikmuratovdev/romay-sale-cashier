@@ -3,6 +3,7 @@ import type { ProductWarehouseItem } from '../product/types'
 
 type SaleProductItem = ProductWarehouseItem & {
   qty: number
+  customPrice?: number
 }
 
 type State = {
@@ -41,7 +42,7 @@ const SaleSlice = createSlice({
         )
       } else {
         // If doesn't exist, add new product with qty 1
-        const productWithQty: SaleProductItem = { ...action.payload, qty: 1 }
+        const productWithQty: SaleProductItem = { ...action.payload, qty: 1, customPrice: action.payload.product.price }
         state.filteredProducts.push(productWithQty)
       }
 
@@ -94,6 +95,14 @@ const SaleSlice = createSlice({
 
       state.filteredProducts = state.filteredProducts.map((p) =>
         p._id === id ? { ...p, qty } : p
+      )
+    },
+
+    updatePrice: (state, action: PayloadAction<{ id: string; price: number }>) => {
+      const { id, price } = action.payload
+
+      state.filteredProducts = state.filteredProducts.map((p) =>
+        p._id === id ? { ...p, customPrice: price } : p
       )
     },
 
@@ -154,6 +163,7 @@ export const {
   increaseQty,
   decreaseQty,
   updateQty,
+  updatePrice,
   clearProducts,
   setClient,
   setAssistant,

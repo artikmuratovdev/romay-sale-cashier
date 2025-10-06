@@ -53,9 +53,11 @@ type UpdateSaleSchema = {
   sales_assistant_id: string
   status: string
   paid_amount: number
+  comment?: string
   items: Array<{
     product_id: string
     quantity: number
+    price?: number
   }>
 }
 
@@ -94,6 +96,7 @@ export default function ClientDetails() {
     sales_assistant_id: '',
     status: '',
     paid_amount: 0,
+    comment: '',
     items: [],
   })
   const [displayData, setDisplayData] = useState({
@@ -157,10 +160,12 @@ export default function ClientDetails() {
       sales_assistant_id: sale?.sales_assistant_id?._id || '',
       status: sale?.status || '',
       paid_amount: paidAmount,
+      comment: '',
       items:
         sale?.items?.map((item) => ({
           product_id: item?.product_id?._id || '',
           quantity: item?.quantity || 1,
+          price: item?.price || 0,
         })) || [],
     })
 
@@ -182,6 +187,7 @@ export default function ClientDetails() {
       sales_assistant_id: '',
       status: '',
       paid_amount: 0,
+      comment: '',
       items: [],
     })
     setDisplayData({
@@ -286,6 +292,7 @@ export default function ClientDetails() {
       sales_assistant_id: editData.sales_assistant_id,
       status: editData.status,
       paid_amount: editData.paid_amount,
+      comment: editData.comment,
       items: editData.items,
     }
 
@@ -331,6 +338,17 @@ export default function ClientDetails() {
     }))
   }
 
+  const updateItemPrice = (index: number, price: number) => {
+    if (price < 0) return
+
+    setEditData((prev) => ({
+      ...prev,
+      items: prev.items.map((item, i) =>
+        i === index ? { ...item, price } : item
+      ),
+    }))
+  }
+
   const updateItemProduct = (index: number, productId: string) => {
     // Double check that this product isn't already selected
     const isAlreadySelected = editData.items.some(
@@ -360,7 +378,7 @@ export default function ClientDetails() {
   const addNewItem = () => {
     setEditData((prev) => ({
       ...prev,
-      items: [...prev.items, { product_id: '', quantity: 1 }],
+      items: [...prev.items, { product_id: '', quantity: 1, price: 0 }],
     }))
   }
 
@@ -618,6 +636,17 @@ export default function ClientDetails() {
               </div>
             </div>
 
+            {/* Comment Section */}
+            <div className="space-y-2">
+              <Label htmlFor="comment">Izoh (ixtiyoriy)</Label>
+              <Input
+                id="comment"
+                value={editData.comment || ''}
+                onChange={(e) => setEditData(prev => ({ ...prev, comment: e.target.value }))}
+                placeholder="Sotuv haqida qo'shimcha izoh..."
+              />
+            </div>
+
             {/* Items Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -823,6 +852,24 @@ export default function ClientDetails() {
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
+                      </div>
+
+                      <div className="w-32">
+                        <Label className="text-sm font-medium">Narx</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={item.price || (product?.product?.price || 0)}
+                          onChange={(e) =>
+                            updateItemPrice(
+                              index,
+                              Number(e.target.value) || 0
+                            )
+                          }
+                          className="h-8 mt-1 text-center"
+                          placeholder="Narx"
+                        />
                       </div>
 
                       <Button

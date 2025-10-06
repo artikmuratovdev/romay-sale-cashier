@@ -3,9 +3,11 @@ export interface CreateSale {
   cashier_id: string
   client_id?: string
   sales_assistant_id: string
+  comment?: string
   items: {
     product_id: string
     quantity: number
+    price?: number
   }[]
   paid_amount: number
 }

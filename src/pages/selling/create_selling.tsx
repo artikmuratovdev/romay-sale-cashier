@@ -48,6 +48,7 @@ export default function Create_selling() {
   const AssistantId = useSelector((state: RootState) => state.sale.assistant)
 
   const [payment, setPayment] = useState(0)
+  const [comment, setComment] = useState('')
 
   // Validation errors state
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({
@@ -69,7 +70,7 @@ export default function Create_selling() {
 
   const { filteredProducts } = useSelector((state: RootState) => state.sale)
   const total = filteredProducts.reduce(
-    (sum, p) => sum + p.product.price * p.qty,
+    (sum, p) => sum + (p.customPrice || p.product.price) * p.qty,
     0
   )
 
@@ -90,6 +91,7 @@ export default function Create_selling() {
 
   const resetSaleDataLocal = () => {
     setPayment(0)
+    setComment('')
     setProducts([])
     setValidationErrors({
       products: false,
@@ -151,9 +153,11 @@ export default function Create_selling() {
         branch_id: me?.branch_id._id as string,
         cashier_id: me?._id as string,
         sales_assistant_id: AssistantId as string,
+        comment: comment || undefined,
         items: filteredProducts.map((p) => ({
           product_id: p._id,
           quantity: p.qty,
+          price: p.customPrice || p.product.price,
         })),
         paid_amount: payment,
       }
@@ -309,6 +313,15 @@ export default function Create_selling() {
                   To'lov miqdorini kiriting
                 </p>
               )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm sm:text-base">Izoh (ixtiyoriy)</Label>
+              <Input
+                className="py-2 px-3 text-sm sm:text-base"
+                placeholder="Sotuv haqida qo'shimcha izoh..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
             </div>
           </CardContent>
         </Card>

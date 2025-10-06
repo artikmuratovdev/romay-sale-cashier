@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   decreaseQty,
   increaseQty,
   removeProduct,
+  updatePrice,
 } from '@/store/slice/Sale.slice'
 import type { RootState } from '@/store/store'
 import { Minus, Plus, Trash2 } from 'lucide-react'
@@ -40,6 +42,22 @@ function Sale_Table() {
     dispatch(removeProduct(id))
   }
 
+  const handleUpdatePrice = (id: string, value: string) => {
+    // Allow empty string for temporary state while typing
+    if (value === '') {
+      dispatch(updatePrice({ id, price: 0 }))
+      return
+    }
+    
+    // Remove any non-numeric characters except decimal point
+    const cleanValue = value.replace(/[^0-9.]/g, '')
+    const price = parseFloat(cleanValue)
+    
+    if (!isNaN(price) && price >= 0) {
+      dispatch(updatePrice({ id, price }))
+    }
+  }
+
   return (
     <div className="w-full">
       {/* Desktop Table */}
@@ -70,8 +88,8 @@ function Sale_Table() {
                       <img
                         src={
                           imageErrors[p._id] || !p.product?.images?.[0]
-                            ? '/package.svg'
-                            : p.product.images[0]
+                            ? '/no_product.jpg' :
+                            p.product.images[0]
                         }
                         alt={p.product.name}
                         className="w-full h-full rounded-md object-cover border border-gray-200"
@@ -110,14 +128,27 @@ function Sale_Table() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
-                  <span className="font-medium whitespace-nowrap">
-                    {p.product.price.toLocaleString()}{' '}
+                  <div className="flex justify-center items-center gap-1">
+                    <Input
+                      type="text"
+                      value={p.customPrice !== undefined ? p.customPrice : p.product.price}
+                      onChange={(e) => handleUpdatePrice(p._id, e.target.value)}
+                      onBlur={(e) => {
+                        // Ensure we have a valid number when focus is lost
+                        const value = e.target.value
+                        if (value === '' || isNaN(Number(value))) {
+                          handleUpdatePrice(p._id, p.product.price.toString())
+                        }
+                      }}
+                      className="h-8 w-20 text-center text-xs"
+                      placeholder="0"
+                    />
                     <span className="text-xs text-gray-500">UZS</span>
-                  </span>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
                   <span className="font-semibold text-green-600 whitespace-nowrap">
-                    {(p.product.price * p.qty).toLocaleString()}{' '}
+                    {((p.customPrice || p.product.price) * p.qty).toLocaleString()}{' '}
                     <span className="text-xs">UZS</span>
                   </span>
                 </td>
@@ -222,15 +253,28 @@ function Sale_Table() {
             <div className="grid grid-cols-2 gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Narx</p>
-                <p className="font-medium text-sm">
-                  {p.product.price.toLocaleString()}{' '}
+                <div className="flex flex-col items-center gap-1">
+                  <Input
+                    type="text"
+                    value={p.customPrice !== undefined ? p.customPrice : p.product.price}
+                    onChange={(e) => handleUpdatePrice(p._id, e.target.value)}
+                    onBlur={(e) => {
+                      // Ensure we have a valid number when focus is lost
+                      const value = e.target.value
+                      if (value === '' || isNaN(Number(value))) {
+                        handleUpdatePrice(p._id, p.product.price.toString())
+                      }
+                    }}
+                    className="h-8 w-20 text-center text-xs"
+                    placeholder="0"
+                  />
                   <span className="text-xs text-gray-500">UZS</span>
-                </p>
+                </div>
               </div>
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Summa</p>
                 <p className="font-semibold text-green-600 text-sm">
-                  {(p.product.price * p.qty).toLocaleString()}{' '}
+                  {((p.customPrice || p.product.price) * p.qty).toLocaleString()}{' '}
                   <span className="text-xs">UZS</span>
                 </p>
               </div>
