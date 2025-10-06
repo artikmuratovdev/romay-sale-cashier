@@ -67,8 +67,6 @@ function ProductPage() {
     setSearch(value)
     setPage(1) // Reset to first page when searching
   }
-
-  // Filter products based on search input (client-side filtering if API doesn't support search)
   const filteredProducts = useMemo(() => {
     if (!productsData) return []
 
@@ -109,7 +107,6 @@ function ProductPage() {
     setSelectedProduct(null)
   }
 
-  // Helper function to truncate text intelligently
   const truncateText = (text: string, maxLength: number) => {
     if (!text || text.length <= maxLength) return text
     return text.substring(0, maxLength) + '...'
@@ -232,7 +229,7 @@ function ProductPage() {
                               <img
                                 src={product.product.images[0]}
                                 alt={product.product?.name || 'Product'}
-                                className="w-full h-full object-cover"
+                                className={`w-full h-full object-cover`}
                                 onError={(e) => {
                                   e.currentTarget.src = '/no_product.jpg'
                                 }}
@@ -365,11 +362,11 @@ function ProductPage() {
                     <CardContent className="p-3">
                       <div className="w-full h-36 flex items-center justify-center bg-gray-50 rounded-md border border-gray-200 overflow-hidden">
                         <img
-                          src={product.product.images?.[0] || '/package.svg'}
+                          src={product.product.images?.[0] || '/no_product.jpg'}
                           alt={product.product.name}
                           className="w-full h-full object-contain"
                           onError={(e) => {
-                            e.currentTarget.src = '/package.svg'
+                            e.currentTarget.src = '/no_product.jpg'
                           }}
                           loading="lazy"
                         />

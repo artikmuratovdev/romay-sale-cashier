@@ -102,7 +102,7 @@ export function EnhancedProductDetailsModal({
           <div className="flex gap-4">
             <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
               <img
-                src={product.product.images?.[0] || '/package.svg'}
+                src={product.product.images?.[0] || '/no_product.jpg'}
                 alt={product.product.name}
                 className="w-full h-full object-contain"
               />
