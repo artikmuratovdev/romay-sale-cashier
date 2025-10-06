@@ -24,7 +24,10 @@ import {
   useCloseDebtMutation,
   useGetOneClientQuery,
 } from '@/store/clients/clients.api'
-import { useGetAllProductsQuery, useGetProductsInfiniteQuery } from '@/store/product/product.api'
+import {
+  useGetAllProductsQuery,
+  useGetProductsInfiniteQuery,
+} from '@/store/product/product.api'
 import {
   useDeleteSaleMutation,
   useGetAllSalesQuery,
@@ -53,7 +56,7 @@ type UpdateSaleSchema = {
   sales_assistant_id: string
   status: string
   paid_amount: number
-  comment?: string
+  comment: string
   items: Array<{
     product_id: string
     quantity: number
@@ -102,6 +105,9 @@ export default function ClientDetails() {
   const [displayData, setDisplayData] = useState({
     clientUsername: '',
     salesAssistantUsername: '',
+  })
+  const [validationErrors, setValidationErrors] = useState({
+    comment: false,
   })
 
   // Infinite scroll states
@@ -162,13 +168,15 @@ export default function ClientDetails() {
         setAllProducts(infiniteProductsData.data)
       } else {
         // Subsequent pages - append to existing products
-        setAllProducts(prev => {
-          const existingIds = new Set(prev.map(p => p._id))
-          const newProducts = infiniteProductsData.data.filter(p => !existingIds.has(p._id))
+        setAllProducts((prev) => {
+          const existingIds = new Set(prev.map((p) => p._id))
+          const newProducts = infiniteProductsData.data.filter(
+            (p) => !existingIds.has(p._id)
+          )
           return [...prev, ...newProducts]
         })
       }
-      
+
       // Update pagination info
       setHasNextPage(Boolean(infiniteProductsData.next_page))
       setIsLoadingMore(false)
@@ -179,19 +187,22 @@ export default function ClientDetails() {
   const loadMoreProducts = useCallback(() => {
     if (hasNextPage && !isFetchingInfiniteProducts && !isLoadingMore) {
       setIsLoadingMore(true)
-      setCurrentPage(prev => prev + 1)
+      setCurrentPage((prev) => prev + 1)
     }
   }, [hasNextPage, isFetchingInfiniteProducts, isLoadingMore])
 
   // Scroll handler for infinite scroll
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
-    const isNearBottom = scrollHeight - scrollTop <= clientHeight + 50
-    
-    if (isNearBottom) {
-      loadMoreProducts()
-    }
-  }, [loadMoreProducts])
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+      const isNearBottom = scrollHeight - scrollTop <= clientHeight + 50
+
+      if (isNearBottom) {
+        loadMoreProducts()
+      }
+    },
+    [loadMoreProducts]
+  )
 
   // Helper function to get product by ID
   const getProductById = (productId: string) => {
@@ -199,30 +210,33 @@ export default function ClientDetails() {
   }
 
   // Helper function to get available products for selection with infinite scroll
-  const getAvailableProducts = useCallback((currentItemIndex?: number) => {
-    if (!allProducts.length) return []
+  const getAvailableProducts = useCallback(
+    (currentItemIndex?: number) => {
+      if (!allProducts.length) return []
 
-    // Get all selected product IDs except for the current item being edited
-    const selectedProductIds = editData.items
-      .map((item, index) => {
-        // Don't include current item index and don't include empty product IDs
-        if (currentItemIndex !== undefined && index === currentItemIndex) {
-          return null
-        }
-        return item.product_id || null
+      // Get all selected product IDs except for the current item being edited
+      const selectedProductIds = editData.items
+        .map((item, index) => {
+          // Don't include current item index and don't include empty product IDs
+          if (currentItemIndex !== undefined && index === currentItemIndex) {
+            return null
+          }
+          return item.product_id || null
+        })
+        .filter((id): id is string => Boolean(id)) // Type-safe filter for non-empty strings
+
+      // Filter out selected products and products with no stock
+      const availableProducts = allProducts.filter((product) => {
+        const hasStock = product.product_count > 0
+        const isNotSelected = !selectedProductIds.includes(product._id)
+
+        return hasStock && isNotSelected
       })
-      .filter((id): id is string => Boolean(id)) // Type-safe filter for non-empty strings
 
-    // Filter out selected products and products with no stock
-    const availableProducts = allProducts.filter((product) => {
-      const hasStock = product.product_count > 0
-      const isNotSelected = !selectedProductIds.includes(product._id)
-
-      return hasStock && isNotSelected
-    })
-
-    return availableProducts
-  }, [allProducts, editData.items])
+      return availableProducts
+    },
+    [allProducts, editData.items]
+  )
 
   // Regex to handle number input without leading zeros
   const handlePaidAmountChange = (value: string) => {
@@ -283,6 +297,7 @@ export default function ClientDetails() {
       clientUsername: '',
       salesAssistantUsername: '',
     })
+    setValidationErrors({ comment: false })
   }
 
   const openDeleteModal = (saleId: string, orderNumber: string) => {
@@ -338,23 +353,22 @@ export default function ClientDetails() {
   const handleSaveChanges = async () => {
     if (!selectedSale) return
 
+    // Reset validation errors
+    setValidationErrors({ comment: false })
+
     // Validation
+    if (!editData.comment || editData.comment.trim() === '') {
+      setValidationErrors({ comment: true })
+      toast.error('Izoh maydoni to\'ldirilishi shart')
+      return
+    }
+
     if (
       !editData.client_id ||
       !editData.sales_assistant_id ||
       !editData.status
     ) {
       toast.error("Barcha majburiy maydonlarni to'ldiring")
-      return
-    }
-
-    if (editData.paid_amount < 0) {
-      toast.error("To'langan summa manfiy bo'lmasligi kerak")
-      return
-    }
-
-    if (editData.items.length === 0) {
-      toast.error("Kamida bitta mahsulot bo'lishi kerak")
       return
     }
 
@@ -723,17 +737,30 @@ export default function ClientDetails() {
                   placeholder="To'langan summa"
                 />
               </div>
-            </div>
-
-            {/* Comment Section */}
-            <div className="space-y-2">
-              <Label htmlFor="comment">Izoh (ixtiyoriy)</Label>
-              <Input
-                id="comment"
-                value={editData.comment || ''}
-                onChange={(e) => setEditData(prev => ({ ...prev, comment: e.target.value }))}
-                placeholder="Sotuv haqida qo'shimcha izoh..."
-              />
+              <div className="space-y-2">
+                <Label htmlFor="comment">Izoh *</Label>
+                <Input
+                  id="comment"
+                  value={editData.comment || ''}
+                  onChange={(e) => {
+                    setEditData((prev) => ({
+                      ...prev,
+                      comment: e.target.value,
+                    }))
+                    // Clear validation error when user starts typing
+                    if (validationErrors.comment) {
+                      setValidationErrors({ comment: false })
+                    }
+                  }}
+                  placeholder="Sotuv haqida izoh kiriting..."
+                  required
+                  className={`${
+                    validationErrors.comment
+                      ? 'border-red-500 focus:border-red-600 focus:ring-red-500 shadow-red-200 shadow-md'
+                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
+                />
+              </div>
             </div>
 
             {/* Items Section */}
@@ -830,7 +857,7 @@ export default function ClientDetails() {
                             </div>
 
                             {/* Scrollable Product List */}
-                            <div 
+                            <div
                               ref={scrollContainerRef}
                               className="max-h-60 overflow-y-auto"
                               onScroll={handleScroll}
@@ -845,7 +872,8 @@ export default function ClientDetails() {
                                         alt={product.product.name}
                                         className="w-8 h-8 rounded object-cover"
                                         onError={(e) => {
-                                          const img = e.target as HTMLImageElement
+                                          const img =
+                                            e.target as HTMLImageElement
                                           img.style.display = 'none'
                                         }}
                                       />
@@ -915,23 +943,31 @@ export default function ClientDetails() {
                               {/* Loading State */}
                               {(isLoadingInfiniteProducts || isLoadingMore) && (
                                 <div className="px-2 py-3 text-center text-sm text-gray-500">
-                                  {debouncedSearchTerm ? 'Qidirilmoqda...' : 'Ko\'proq mahsulotlar yuklanmoqda...'}
+                                  {debouncedSearchTerm
+                                    ? 'Qidirilmoqda...'
+                                    : "Ko'proq mahsulotlar yuklanmoqda..."}
                                 </div>
                               )}
 
                               {/* No Results */}
-                              {!isLoadingInfiniteProducts && availableProducts.length === 0 && !product && (
-                                <div className="px-2 py-3 text-center text-sm text-gray-500">
-                                  {debouncedSearchTerm ? 'Hech narsa topilmadi' : 'Mavjud mahsulotlar yo\'q'}
-                                </div>
-                              )}
+                              {!isLoadingInfiniteProducts &&
+                                availableProducts.length === 0 &&
+                                !product && (
+                                  <div className="px-2 py-3 text-center text-sm text-gray-500">
+                                    {debouncedSearchTerm
+                                      ? 'Hech narsa topilmadi'
+                                      : "Mavjud mahsulotlar yo'q"}
+                                  </div>
+                                )}
 
                               {/* Load More Indicator */}
-                              {hasNextPage && !isLoadingMore && !isLoadingInfiniteProducts && (
-                                <div className="px-2 py-2 text-center text-xs text-gray-400">
-                                  Pastga aylantiring...
-                                </div>
-                              )}
+                              {hasNextPage &&
+                                !isLoadingMore &&
+                                !isLoadingInfiniteProducts && (
+                                  <div className="px-2 py-2 text-center text-xs text-gray-400">
+                                    Pastga aylantiring...
+                                  </div>
+                                )}
                             </div>
                           </SelectContent>
                         </Select>
@@ -984,12 +1020,9 @@ export default function ClientDetails() {
                           type="number"
                           min="0"
                           step="0.01"
-                          value={item.price || (product?.product?.price || 0)}
+                          value={item.price || product?.product?.price || 0}
                           onChange={(e) =>
-                            updateItemPrice(
-                              index,
-                              Number(e.target.value) || 0
-                            )
+                            updateItemPrice(index, Number(e.target.value) || 0)
                           }
                           className="h-8 mt-1 text-center"
                           placeholder="Narx"

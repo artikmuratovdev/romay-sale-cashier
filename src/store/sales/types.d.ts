@@ -132,6 +132,7 @@ interface Sale {
     currency: string
     _id: string
   }
+  comment?: string
   created_at: string
   updated_at: string
 }
