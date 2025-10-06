@@ -24,7 +24,7 @@ import {
   useCloseDebtMutation,
   useGetOneClientQuery,
 } from '@/store/clients/clients.api'
-import { useGetAllProductsQuery } from '@/store/product/product.api'
+import { useGetAllProductsQuery, useGetProductsInfiniteQuery } from '@/store/product/product.api'
 import {
   useDeleteSaleMutation,
   useGetAllSalesQuery,
@@ -42,7 +42,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import money from '../selling/components/money'
@@ -104,14 +104,103 @@ export default function ClientDetails() {
     salesAssistantUsername: '',
   })
 
+  // Infinite scroll states
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [allProducts, setAllProducts] = useState<any[]>([])
+  const [hasNextPage, setHasNextPage] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+      setCurrentPage(1)
+      setAllProducts([])
+      setHasNextPage(true)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Reset when branch changes
+  useEffect(() => {
+    if (data?.data.branch_id._id) {
+      setCurrentPage(1)
+      setAllProducts([])
+      setHasNextPage(true)
+      setDebouncedSearchTerm('')
+      setSearchTerm('')
+    }
+  }, [data?.data.branch_id._id])
+
+  // Infinite query for products
+  const {
+    data: infiniteProductsData,
+    isLoading: isLoadingInfiniteProducts,
+    isFetching: isFetchingInfiniteProducts,
+  } = useGetProductsInfiniteQuery(
+    {
+      branch: data?.data.branch_id._id as string,
+      page: currentPage,
+      limit: 20,
+      search: debouncedSearchTerm || undefined,
+    },
+    {
+      skip: !data?.data.branch_id._id,
+      refetchOnMountOrArgChange: true,
+    }
+  )
+
+  // Update products when new data arrives
+  useEffect(() => {
+    if (infiniteProductsData?.data) {
+      if (currentPage === 1) {
+        // First page or new search - replace all products
+        setAllProducts(infiniteProductsData.data)
+      } else {
+        // Subsequent pages - append to existing products
+        setAllProducts(prev => {
+          const existingIds = new Set(prev.map(p => p._id))
+          const newProducts = infiniteProductsData.data.filter(p => !existingIds.has(p._id))
+          return [...prev, ...newProducts]
+        })
+      }
+      
+      // Update pagination info
+      setHasNextPage(Boolean(infiniteProductsData.next_page))
+      setIsLoadingMore(false)
+    }
+  }, [infiniteProductsData, currentPage])
+
+  // Load more products
+  const loadMoreProducts = useCallback(() => {
+    if (hasNextPage && !isFetchingInfiniteProducts && !isLoadingMore) {
+      setIsLoadingMore(true)
+      setCurrentPage(prev => prev + 1)
+    }
+  }, [hasNextPage, isFetchingInfiniteProducts, isLoadingMore])
+
+  // Scroll handler for infinite scroll
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+    const isNearBottom = scrollHeight - scrollTop <= clientHeight + 50
+    
+    if (isNearBottom) {
+      loadMoreProducts()
+    }
+  }, [loadMoreProducts])
+
   // Helper function to get product by ID
   const getProductById = (productId: string) => {
     return products?.data?.find((product) => product._id === productId)
   }
 
-  // Helper function to get available products for selection
-  const getAvailableProducts = (currentItemIndex?: number) => {
-    if (!products?.data) return []
+  // Helper function to get available products for selection with infinite scroll
+  const getAvailableProducts = useCallback((currentItemIndex?: number) => {
+    if (!allProducts.length) return []
 
     // Get all selected product IDs except for the current item being edited
     const selectedProductIds = editData.items
@@ -125,7 +214,7 @@ export default function ClientDetails() {
       .filter((id): id is string => Boolean(id)) // Type-safe filter for non-empty strings
 
     // Filter out selected products and products with no stock
-    const availableProducts = products.data.filter((product) => {
+    const availableProducts = allProducts.filter((product) => {
       const hasStock = product.product_count > 0
       const isNotSelected = !selectedProductIds.includes(product._id)
 
@@ -133,7 +222,7 @@ export default function ClientDetails() {
     })
 
     return availableProducts
-  }
+  }, [allProducts, editData.items])
 
   // Regex to handle number input without leading zeros
   const handlePaidAmountChange = (value: string) => {
@@ -689,7 +778,6 @@ export default function ClientDetails() {
                         <Select
                           value={item.product_id}
                           onValueChange={(value) => {
-                            // Check if this product is already selected in another item
                             const isAlreadySelected = editData.items.some(
                               (otherItem, otherIndex) =>
                                 otherIndex !== index &&
@@ -726,89 +814,125 @@ export default function ClientDetails() {
                               )}
                             </SelectValue>
                           </SelectTrigger>
-                          <SelectContent>
-                            {/* Always show the currently selected product if it exists */}
-                            {product && (
-                              <SelectItem value={product._id}>
-                                <div className="flex items-center gap-2">
-                                  {product.product?.images?.[0] && (
-                                    <img
-                                      src={product.product.images[0]}
-                                      alt={product.product.name}
-                                      className="w-8 h-8 rounded object-cover"
-                                      onError={(e) => {
-                                        const img = e.target as HTMLImageElement
-                                        img.style.display = 'none'
-                                      }}
-                                    />
-                                  )}
-                                  <div className="flex flex-col">
-                                    <span className="font-medium">
-                                      {product.product?.name || 'N/A'}
-                                      <span className="text-xs text-green-600 ml-1">
-                                        (Hozirgi)
-                                      </span>
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                      {money(product.product?.price)}{' '}
-                                      {product.product?.currency || "so'm"}
-                                    </span>
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            )}
+                          <SelectContent side="top" align="start">
+                            {/* Search Input */}
+                            <div className="p-2 border-b">
+                              <Input
+                                placeholder="Mahsulot qidirish..."
+                                value={searchTerm}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setSearchTerm(e.target.value)
+                                }}
+                                className="h-8 text-sm"
+                                onKeyDown={(e) => e.stopPropagation()}
+                              />
+                            </div>
 
-                            {/* Separator if current product exists */}
-                            {product && availableProducts.length > 0 && (
-                              <div className="border-t border-gray-200 my-1"></div>
-                            )}
-
-                            {/* Show available products */}
-                            {availableProducts.map((productItem) => {
-                              if (
-                                !productItem.product ||
-                                productItem._id === product?._id
-                              )
-                                return null
-                              return (
-                                <SelectItem
-                                  key={productItem._id}
-                                  value={productItem._id}
-                                >
+                            {/* Scrollable Product List */}
+                            <div 
+                              ref={scrollContainerRef}
+                              className="max-h-60 overflow-y-auto"
+                              onScroll={handleScroll}
+                            >
+                              {/* Currently Selected Product */}
+                              {product && (
+                                <SelectItem value={product._id}>
                                   <div className="flex items-center gap-2">
-                                    {productItem.product?.images?.[0] && (
+                                    {product.product?.images?.[0] && (
                                       <img
-                                        src={productItem.product.images[0]}
-                                        alt={productItem.product.name}
+                                        src={product.product.images[0]}
+                                        alt={product.product.name}
                                         className="w-8 h-8 rounded object-cover"
                                         onError={(e) => {
-                                          const img =
-                                            e.target as HTMLImageElement
+                                          const img = e.target as HTMLImageElement
                                           img.style.display = 'none'
                                         }}
                                       />
                                     )}
                                     <div className="flex flex-col">
                                       <span className="font-medium">
-                                        {productItem.product?.name || 'N/A'}
+                                        {product.product?.name || 'N/A'}
+                                        <span className="text-xs text-green-600 ml-1">
+                                          (Hozirgi)
+                                        </span>
                                       </span>
                                       <span className="text-xs text-gray-500">
-                                        {money(productItem.product?.price)}{' '}
-                                        {productItem.product?.currency ||
-                                          "so'm"}{' '}
-                                        • Soni: {productItem.product_count}
+                                        {money(product.product?.price)}{' '}
+                                        {product.product?.currency || "so'm"}
                                       </span>
                                     </div>
                                   </div>
                                 </SelectItem>
-                              )
-                            })}
+                              )}
 
-                            {availableProducts.length === 0 && !product && (
-                              <div className="px-2 py-1 text-sm text-gray-500">
-                                Mavjud mahsulotlar yo'q
-                              </div>
-                            )}
+                              {/* Separator */}
+                              {product && availableProducts.length > 0 && (
+                                <div className="border-t border-gray-200 my-1"></div>
+                              )}
+
+                              {/* Available Products */}
+                              {availableProducts.map((productItem) => {
+                                if (
+                                  !productItem.product ||
+                                  productItem._id === product?._id
+                                )
+                                  return null
+                                return (
+                                  <SelectItem
+                                    key={`${productItem._id}-${currentPage}`}
+                                    value={productItem._id}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      {productItem.product?.images?.[0] && (
+                                        <img
+                                          src={productItem.product.images[0]}
+                                          alt={productItem.product.name}
+                                          className="w-8 h-8 rounded object-cover"
+                                          onError={(e) => {
+                                            const img =
+                                              e.target as HTMLImageElement
+                                            img.style.display = 'none'
+                                          }}
+                                        />
+                                      )}
+                                      <div className="flex flex-col">
+                                        <span className="font-medium">
+                                          {productItem.product?.name || 'N/A'}
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                          {money(productItem.product?.price)}{' '}
+                                          {productItem.product?.currency ||
+                                            "so'm"}{' '}
+                                          • Soni: {productItem.product_count}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </SelectItem>
+                                )
+                              })}
+
+                              {/* Loading State */}
+                              {(isLoadingInfiniteProducts || isLoadingMore) && (
+                                <div className="px-2 py-3 text-center text-sm text-gray-500">
+                                  {debouncedSearchTerm ? 'Qidirilmoqda...' : 'Ko\'proq mahsulotlar yuklanmoqda...'}
+                                </div>
+                              )}
+
+                              {/* No Results */}
+                              {!isLoadingInfiniteProducts && availableProducts.length === 0 && !product && (
+                                <div className="px-2 py-3 text-center text-sm text-gray-500">
+                                  {debouncedSearchTerm ? 'Hech narsa topilmadi' : 'Mavjud mahsulotlar yo\'q'}
+                                </div>
+                              )}
+
+                              {/* Load More Indicator */}
+                              {hasNextPage && !isLoadingMore && !isLoadingInfiniteProducts && (
+                                <div className="px-2 py-2 text-center text-xs text-gray-400">
+                                  Pastga aylantiring...
+                                </div>
+                              )}
+                            </div>
                           </SelectContent>
                         </Select>
                       </div>
