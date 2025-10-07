@@ -68,24 +68,10 @@ const SearchInput = memo(() => {
 
   // Handle products data and pagination
   useEffect(() => {
-    console.log('Products effect triggered:', {
-      hasProducts: !!products?.data,
-      dataLength: products?.data?.length,
-      currentPage,
-      nextPage: products?.next_page,
-      totalProducts: products?.after_filtering_count,
-    })
-
     if (products?.data && Array.isArray(products.data)) {
       if (currentPage === 1) {
-        // Reset products for new search or first page
-        console.log(
-          'Resetting products for page 1, new data length:',
-          products.data.length
-        )
         setAllLoadedProducts(products.data as ProductWarehouseItem[])
       } else {
-        // Append new products for pagination with duplicate prevention
         setAllLoadedProducts((prev) => {
           const newProducts = products.data as ProductWarehouseItem[]
           const uniqueNewProducts = newProducts.filter(
@@ -94,12 +80,6 @@ const SearchInput = memo(() => {
                 (existingProduct) => existingProduct._id === newProduct._id
               )
           )
-
-          console.log('Appending products:', {
-            previousCount: prev.length,
-            newProductsCount: newProducts.length,
-            uniqueNewCount: uniqueNewProducts.length,
-          })
 
           const updatedProducts = [...prev, ...uniqueNewProducts]
 
@@ -116,12 +96,6 @@ const SearchInput = memo(() => {
       const hasMore =
         products.next_page !== null && products.data && products.data.length > 0
 
-      console.log(
-        'Setting hasNextPage:',
-        hasMore,
-        'next_page:',
-        products.next_page
-      )
       setHasNextPage(hasMore)
 
       // Update Redux store with current products only (not accumulated)
@@ -139,27 +113,15 @@ const SearchInput = memo(() => {
     }
   }, [shouldRefetch, refetch, me?.branch_id._id])
 
-  // Load more products function with throttling and better error handling
+  // Load more products function with optimized conditions
   const loadMoreProducts = useCallback(() => {
-    console.log('loadMoreProducts called with conditions:', {
-      isLoading,
-      isFetching,
-      hasNextPage,
-      isLoadingMore,
-      currentPage,
-    })
-
-    if (!isLoading && !isFetching && hasNextPage && !isLoadingMore) {
-      console.log('Setting loading more to true and incrementing page')
+    if (!isLoading && !isFetching && hasNextPage && !isLoadingMore && me?.branch_id._id) {
       setIsLoadingMore(true)
+      
       setCurrentPage((prev) => {
         const nextPage = prev + 1
-        console.log(`Page changing from ${prev} to ${nextPage}`)
 
-        // Safety check: Don't exceed reasonable page limit
         if (nextPage > 50) {
-          // Max 50 pages (1000 products)
-          console.log('Reached max page limit (50)')
           setHasNextPage(false)
           setIsLoadingMore(false)
           return prev
@@ -167,15 +129,11 @@ const SearchInput = memo(() => {
         return nextPage
       })
 
-      // Reset loading state with error handling
       setTimeout(() => {
-        console.log('Resetting isLoadingMore to false')
         setIsLoadingMore(false)
-      }, 2000) // Increased timeout for slower networks
-    } else {
-      console.log('loadMoreProducts conditions not met')
+      }, 1500)
     }
-  }, [isLoading, isFetching, hasNextPage, isLoadingMore, currentPage])
+  }, [isLoading, isFetching, hasNextPage, isLoadingMore, currentPage, me?.branch_id._id, allLoadedProducts.length])
 
   // Scroll event listener for infinite scrolling with throttling
   useEffect(() => {
@@ -190,25 +148,8 @@ const SearchInput = memo(() => {
 
       scrollTimeout = setTimeout(() => {
         const { scrollTop, scrollHeight, clientHeight } = scrollContainer
-        const isNearBottom = scrollHeight - scrollTop - clientHeight < 50 // Reduced threshold for easier triggering
-        const hasEnoughItems = allLoadedProducts.length >= 1 // Reduced minimum items requirement
-
-        // Debug information
-        console.log('Scroll Debug:', {
-          scrollTop,
-          scrollHeight,
-          clientHeight,
-          'scrollHeight - scrollTop - clientHeight':
-            scrollHeight - scrollTop - clientHeight,
-          isNearBottom,
-          hasNextPage,
-          hasEnoughItems,
-          isLoading,
-          isFetching,
-          isLoadingMore,
-          currentPage,
-          allLoadedProductsCount: allLoadedProducts.length,
-        })
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100 // Increased threshold for better detection
+        const hasEnoughItems = allLoadedProducts.length >= 5 // Minimum items to start infinite scroll
 
         if (
           isNearBottom &&
@@ -216,21 +157,14 @@ const SearchInput = memo(() => {
           hasEnoughItems &&
           !isLoading &&
           !isFetching &&
-          !isLoadingMore
+          !isLoadingMore &&
+          me?.branch_id._id
         ) {
-          console.log('🚀 Loading more products...')
           loadMoreProducts()
-        } else {
-          console.log('❌ Conditions not met for loading more:', {
-            isNearBottom,
-            hasNextPage,
-            hasEnoughItems,
-            loadingConditions: { isLoading, isFetching, isLoadingMore },
-          })
         }
 
         scrollTimeout = null
-      }, 100) // Reduced throttle for better responsiveness
+      }, 50) // Optimized throttle for better responsiveness
     }
 
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
@@ -245,6 +179,7 @@ const SearchInput = memo(() => {
     isLoadingMore,
     loadMoreProducts,
     allLoadedProducts.length,
+    me?.branch_id._id,
   ])
 
   // Get all products from Redux
@@ -271,11 +206,8 @@ const SearchInput = memo(() => {
       )
 
       if (isAlreadySelected) {
-        return false // Don't show products that are already selected
+        return false
       }
-
-      // Since we're using server-side search, we don't need client-side filtering
-      // when there's a search term (it's handled by the API)
       return true
     })
   }, [allLoadedProducts, allProductsFromRedux, filteredProductsFromRedux])
@@ -323,10 +255,8 @@ const SearchInput = memo(() => {
   // Handle network errors and retry logic
   useEffect(() => {
     if (error && !isLoading) {
-      console.error('Product fetch error:', error)
       toast.error('Mahsulotlarni yuklashda xatolik yuz berdi')
 
-      // Auto-retry after 3 seconds for network errors
       const retryTimeout = setTimeout(() => {
         if (me?.branch_id._id) {
           refetch()
@@ -464,22 +394,6 @@ const SearchInput = memo(() => {
                     </tr>
                   )}
 
-                  {/* Manual load more button for testing */}
-                  {hasNextPage &&
-                    !isLoading &&
-                    !isFetching &&
-                    !isLoadingMore && (
-                      <tr className="w-full">
-                        <td colSpan={5} className="px-7 py-4 text-center">
-                          <button
-                            onClick={loadMoreProducts}
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                          >
-                            Ko'proq yuklash (Manual Test)
-                          </button>
-                        </td>
-                      </tr>
-                    )}
 
                   {/* End of results indicator */}
                   {!hasNextPage && allProducts.length > 0 && (
@@ -585,17 +499,6 @@ const SearchInput = memo(() => {
                   </div>
                 )}
 
-                {/* Mobile manual load more button */}
-                {hasNextPage && !isLoading && !isFetching && !isLoadingMore && (
-                  <div className="px-4 py-4 text-center">
-                    <button
-                      onClick={loadMoreProducts}
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                    >
-                      Ko'proq yuklash
-                    </button>
-                  </div>
-                )}
 
                 {/* Mobile end of results indicator */}
                 {!hasNextPage && allProducts.length > 0 && (
