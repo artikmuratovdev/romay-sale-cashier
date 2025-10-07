@@ -261,7 +261,10 @@ export default function Sale() {
   // Helper function to get available products for selection with infinite scroll
   const getAvailableProducts = useCallback(
     (currentItemIndex?: number) => {
-      if (!allProducts.length) return []
+      // Use allProducts if available, otherwise fallback to products?.data
+      const productsToUse = allProducts.length > 0 ? allProducts : (products?.data || [])
+      
+      if (!productsToUse.length) return []
 
       // Get all selected product IDs except for the current item being edited
       const selectedProductIds = editData.items
@@ -275,7 +278,7 @@ export default function Sale() {
         .filter((id): id is string => Boolean(id)) // Type-safe filter for non-empty strings
 
       // Filter out selected products and products with no stock
-      const availableProducts = allProducts.filter((product) => {
+      const availableProducts = productsToUse.filter((product) => {
         const hasStock = product.product_count > 0
         const isNotSelected = !selectedProductIds.includes(product._id)
         return hasStock && isNotSelected
@@ -283,8 +286,9 @@ export default function Sale() {
 
       return availableProducts
     },
-    [allProducts, editData.items]
+    [allProducts, products?.data, editData.items]
   )
+
 
   // Regex to handle number input without leading zeros
   const handlePaidAmountChange = (value: string) => {
@@ -963,15 +967,6 @@ export default function Sale() {
                                     {debouncedSearchTerm
                                       ? 'Hech narsa topilmadi'
                                       : "Mavjud mahsulotlar yo'q"}
-                                  </div>
-                                )}
-
-                              {/* Load More Indicator */}
-                              {hasNextPage &&
-                                !isLoadingMore &&
-                                !isLoadingInfiniteProducts && (
-                                  <div className="px-2 py-2 text-center text-xs text-gray-400">
-                                    Pastga aylantiring...
                                   </div>
                                 )}
                             </div>

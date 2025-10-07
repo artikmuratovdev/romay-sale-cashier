@@ -212,7 +212,10 @@ export default function ClientDetails() {
   // Helper function to get available products for selection with infinite scroll
   const getAvailableProducts = useCallback(
     (currentItemIndex?: number) => {
-      if (!allProducts.length) return []
+      // Use allProducts if available, otherwise fallback to products?.data
+      const productsToUse = allProducts.length > 0 ? allProducts : (products?.data || [])
+      
+      if (!productsToUse.length) return []
 
       // Get all selected product IDs except for the current item being edited
       const selectedProductIds = editData.items
@@ -226,7 +229,7 @@ export default function ClientDetails() {
         .filter((id): id is string => Boolean(id)) // Type-safe filter for non-empty strings
 
       // Filter out selected products and products with no stock
-      const availableProducts = allProducts.filter((product) => {
+      const availableProducts = productsToUse.filter((product) => {
         const hasStock = product.product_count > 0
         const isNotSelected = !selectedProductIds.includes(product._id)
 
@@ -235,8 +238,9 @@ export default function ClientDetails() {
 
       return availableProducts
     },
-    [allProducts, editData.items]
+    [allProducts, products?.data, editData.items]
   )
+
 
   // Regex to handle number input without leading zeros
   const handlePaidAmountChange = (value: string) => {
