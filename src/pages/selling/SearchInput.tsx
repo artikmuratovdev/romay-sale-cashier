@@ -115,7 +115,13 @@ const SearchInput = memo(() => {
 
   // Load more products function with optimized conditions
   const loadMoreProducts = useCallback(() => {
-    if (!isLoading && !isFetching && hasNextPage && !isLoadingMore && me?.branch_id._id) {
+    if (
+      !isLoading &&
+      !isFetching &&
+      hasNextPage &&
+      !isLoadingMore &&
+      me?.branch_id._id
+    ) {
       setIsLoadingMore(true)
 
       setCurrentPage((prev) => {
@@ -133,7 +139,7 @@ const SearchInput = memo(() => {
         setIsLoadingMore(false)
       }, 1500)
     }
-  }, [isLoading, isFetching, hasNextPage, isLoadingMore, currentPage, me?.branch_id._id, allLoadedProducts.length])
+  }, [isLoading, isFetching, hasNextPage, isLoadingMore, me?.branch_id._id])
 
   // Scroll event listener for infinite scrolling with throttling
   useEffect(() => {
@@ -399,7 +405,6 @@ const SearchInput = memo(() => {
                     </tr>
                   )}
 
-
                   {/* End of results indicator */}
                   {!hasNextPage && allProducts.length > 0 && (
                     <tr className="w-full">
@@ -470,7 +475,7 @@ const SearchInput = memo(() => {
                         </h4>
                         <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
                           <span className="bg-gray-100 px-2 py-1 rounded">
-                            {p.product?.barcode || 'Barcode yo\'q'}
+                            {p.product?.barcode || "Barcode yo'q"}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -478,12 +483,13 @@ const SearchInput = memo(() => {
                             {p.product?.price?.toLocaleString() || 0} UZS
                           </span>
                           <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${p.product_count > 10
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                              p.product_count > 10
                                 ? 'bg-green-100 text-green-800'
                                 : p.product_count > 0
                                   ? 'bg-yellow-100 text-yellow-800'
                                   : 'bg-red-100 text-red-800'
-                              }`}
+                            }`}
                           >
                             Qoldiq: {p.product_count || 0}
                           </span>
@@ -502,7 +508,6 @@ const SearchInput = memo(() => {
                     </div>
                   </div>
                 )}
-
 
                 {/* Mobile end of results indicator */}
                 {!hasNextPage && allProducts.length > 0 && (

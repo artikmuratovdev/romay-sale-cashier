@@ -1,7 +1,7 @@
+import { useHandleRequest } from '@/hooks/use-handle-request'
 import { useAddBranchMutation } from '@/store/branch/branch.api'
 import { useGetEmployeesQuery } from '@/store/employee/employee'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useHandleRequest } from '@/hooks/use-handle-request'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
@@ -78,7 +78,7 @@ export const AddBranchModal = ({
     if (!isOpen) {
       form.reset()
     }
-  }, [isOpen])
+  }, [isOpen, form])
 
   return (
     <Modal

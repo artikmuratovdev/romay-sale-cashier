@@ -51,8 +51,6 @@ function ProductPage() {
     useState<ProductWarehouseItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const productsData = getAllProductsData?.data || []
-
   // Handle pagination
   const handlePageChange = (newPage: number) => {
     setPage(newPage)
@@ -68,6 +66,8 @@ function ProductPage() {
     setPage(1) // Reset to first page when searching
   }
   const filteredProducts = useMemo(() => {
+    const productsData = getAllProductsData?.data || []
+
     if (!productsData) return []
 
     if (!search.trim()) {
@@ -95,7 +95,7 @@ function ProductPage() {
         productPrice.includes(searchTerm)
       )
     })
-  }, [productsData, search])
+  }, [getAllProductsData?.data, search])
 
   const handleProductClick = (product: ProductWarehouseItem) => {
     setSelectedProduct(product)
@@ -299,14 +299,12 @@ function ProductPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                            <div
-                              className="text-xs text-[#71717A] max-w-full px-2"
-                            >
-                              {truncateText(
-                                product.product?.description || '—',
-                                30
-                              )}
-                            </div>
+                        <div className="text-xs text-[#71717A] max-w-full px-2">
+                          {truncateText(
+                            product.product?.description || '—',
+                            30
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -385,7 +383,10 @@ function ProductPage() {
                           '—'}
                       </div>
                       <div className="mt-2 text-xl font-bold text-[#09090B]">
-                        {formatUsd(product.product.price + '', product.product.currency)}
+                        {formatUsd(
+                          product.product.price + '',
+                          product.product.currency
+                        )}
                       </div>
                     </CardContent>
                   </Card>
