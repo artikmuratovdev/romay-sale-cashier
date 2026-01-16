@@ -159,7 +159,7 @@ function ProductPage() {
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9 w-full"
-              placeholder="Mahsulot nomi, bar-kod, kategoriya bo'yicha qidirish..."
+              placeholder="Mahsulot nomi yoki bar-kod bo'yicha qidirish..."
             />
           </div>
         </div>

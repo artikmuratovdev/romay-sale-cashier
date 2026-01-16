@@ -254,16 +254,25 @@ export default function Sale() {
   )
 
   // Helper function to get product by ID
-  const getProductById = (productId: string) => {
-    return products?.data?.find((product) => product._id === productId)
-  }
+  const getProductById = useCallback(
+    (productId: string) => {
+      // First check in allProducts (from infinite scroll/search)
+      const inAllProducts = allProducts.find((p) => p._id === productId)
+      if (inAllProducts) return inAllProducts
+
+      // Then check in the initial products list
+      return products?.data?.find((product) => product._id === productId)
+    },
+    [allProducts, products?.data]
+  )
 
   // Helper function to get available products for selection with infinite scroll
   const getAvailableProducts = useCallback(
     (currentItemIndex?: number) => {
       // Use allProducts if available, otherwise fallback to products?.data
-      const productsToUse = allProducts.length > 0 ? allProducts : (products?.data || [])
-      
+      const productsToUse =
+        allProducts.length > 0 ? allProducts : products?.data || []
+
       if (!productsToUse.length) return []
 
       // Get all selected product IDs except for the current item being edited
@@ -472,10 +481,14 @@ export default function Sale() {
       return
     }
 
+    // Find the product and get its price
+    const product = getProductById(productId)
+    const price = product?.product?.price || 0
+
     setEditData((prev) => ({
       ...prev,
       items: prev.items.map((item, i) =>
-        i === index ? { ...item, product_id: productId } : item
+        i === index ? { ...item, product_id: productId, price } : item
       ),
     }))
   }
@@ -747,7 +760,7 @@ export default function Sale() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="comment">Izoh *</Label>
+                <Label htmlFor="comment">Izoh <span className='text-red-500'>*</span></Label>
                 <Input
                   id="comment"
                   value={editData.comment || ''}
@@ -763,11 +776,10 @@ export default function Sale() {
                   }}
                   placeholder="Sotuv haqida izoh kiriting..."
                   required
-                  className={`${
-                    validationErrors.comment
+                  className={`${validationErrors.comment
                       ? 'border-red-500 focus:border-red-600 focus:ring-red-500 shadow-red-200 shadow-md'
                       : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                  }`}
+                    }`}
                 />
               </div>
             </div>

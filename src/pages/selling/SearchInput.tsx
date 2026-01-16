@@ -117,7 +117,7 @@ const SearchInput = memo(() => {
   const loadMoreProducts = useCallback(() => {
     if (!isLoading && !isFetching && hasNextPage && !isLoadingMore && me?.branch_id._id) {
       setIsLoadingMore(true)
-      
+
       setCurrentPage((prev) => {
         const nextPage = prev + 1
 
@@ -200,6 +200,11 @@ const SearchInput = memo(() => {
         : allProductsFromRedux || []
 
     return productsToUse.filter((p) => {
+      // Filter out products with 0 or less quantity
+      if (p.product_count <= 0) {
+        return false
+      }
+
       // First check if product is already in filtered products (cart)
       const isAlreadySelected = filteredProductsFromRedux.some(
         (filtered) => filtered._id === p._id
@@ -327,7 +332,7 @@ const SearchInput = memo(() => {
             </tr>
           </thead>
         </table>
-        
+
         {/* Mobile header */}
         <div className="md:hidden sticky top-0 bg-white border-b px-4 py-3">
           <h3 className="text-sm font-medium text-[#71717A]">Mahsulotlar</h3>
@@ -428,7 +433,7 @@ const SearchInput = memo(() => {
               )}
             </tbody>
           </table>
-          
+
           {/* Mobile card layout */}
           <div className="md:hidden">
             {allProducts?.length > 0 ? (
@@ -473,13 +478,12 @@ const SearchInput = memo(() => {
                             {p.product?.price?.toLocaleString() || 0} UZS
                           </span>
                           <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                              p.product_count > 10
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${p.product_count > 10
                                 ? 'bg-green-100 text-green-800'
                                 : p.product_count > 0
                                   ? 'bg-yellow-100 text-yellow-800'
                                   : 'bg-red-100 text-red-800'
-                            }`}
+                              }`}
                           >
                             Qoldiq: {p.product_count || 0}
                           </span>
@@ -488,7 +492,7 @@ const SearchInput = memo(() => {
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Mobile loading indicator */}
                 {(isFetching || isLoadingMore) && hasNextPage && (
                   <div className="px-4 py-4 text-center">
