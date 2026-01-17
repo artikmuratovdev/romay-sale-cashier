@@ -106,7 +106,7 @@ function Clients() {
               <tr>
                 <th className="px-4 py-3 text-left font-medium">Mijoz</th>
                 <th className="px-4 py-3 text-center font-medium">Telefon</th>
-                <th className="px-4 py-3 text-center font-medium">Segment</th>
+                <th className="px-4 py-3 text-center font-medium">Kasbi</th>
                 <th className="px-4 py-3 text-center font-medium">Qarz</th>
                 <th className="px-4 py-3 text-center font-medium">
                   Buyurtmalar
