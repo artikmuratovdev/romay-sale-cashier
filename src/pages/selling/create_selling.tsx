@@ -34,6 +34,7 @@ type ValidationErrors = {
   client: boolean
   assistant: boolean
   payment: boolean
+  comment: boolean
 }
 
 export default function Create_selling() {
@@ -56,6 +57,7 @@ export default function Create_selling() {
     client: false,
     assistant: false,
     payment: false,
+    comment: false,
   })
 
   const [date, setDate] = useState(new Date())
@@ -72,6 +74,11 @@ export default function Create_selling() {
   const total = filteredProducts.reduce(
     (sum, p) => sum + (p.customPrice || p.product.price) * p.qty,
     0
+  )
+
+  // Check if any product price has been changed
+  const hasPriceChanged = filteredProducts.some(
+    (p) => p.customPrice && p.customPrice !== p.product.price
   )
 
   useEffect(() => {
@@ -98,16 +105,22 @@ export default function Create_selling() {
       client: false,
       assistant: false,
       payment: false,
+      comment: false,
     })
     dispatch(resetSaleData())
   }
 
   const validateSale = (): ValidationErrors => {
+    const isPriceChanged = filteredProducts.some(
+      (p) => p.customPrice && p.customPrice !== p.product.price
+    )
+
     const errors: ValidationErrors = {
       products: !filteredProducts || filteredProducts.length === 0,
       client: false,
       assistant: !AssistantId,
       payment: payment <= 0,
+      comment: isPriceChanged && !comment.trim(),
     }
 
     return errors
@@ -137,6 +150,12 @@ export default function Create_selling() {
       setValidationErrors((prev) => ({ ...prev, payment: false }))
     }
   }, [payment])
+
+  useEffect(() => {
+    if (comment.trim()) {
+      setValidationErrors((prev) => ({ ...prev, comment: false }))
+    }
+  }, [comment])
 
   const sendItems = async () => {
     const errors = validateSale()
@@ -234,7 +253,7 @@ export default function Create_selling() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mt-4 sm:mt-6 lg:mt-8">
-        <Card className='py-6 md:py-0'>
+        <Card className="py-6 md:py-0">
           <CardContent className="flex flex-col gap-3 sm:gap-4 sm:p-6">
             <div className="flex flex-col gap-2">
               <Label className="text-sm sm:text-base">Mijoz (ixtiyoriy)</Label>
@@ -282,11 +301,15 @@ export default function Create_selling() {
                 )}
               </div>
               {validationErrors.assistant && (
-                <p className="text-red-500 text-xs sm:text-[14px]">Assistentni tanlang</p>
+                <p className="text-red-500 text-xs sm:text-[14px]">
+                  Assistentni tanlang
+                </p>
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label className={`text-sm sm:text-base ${validationErrors.payment ? 'text-red-500' : ''}`}>
+              <Label
+                className={`text-sm sm:text-base ${validationErrors.payment ? 'text-red-500' : ''}`}
+              >
                 Naqd {validationErrors.payment && '*'}
               </Label>
               <div className="relative">
@@ -315,17 +338,39 @@ export default function Create_selling() {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label className="text-sm sm:text-base">Izoh (ixtiyoriy)</Label>
+              <Label
+                className={`text-sm sm:text-base ${
+                  hasPriceChanged && validationErrors.comment
+                    ? 'text-red-500'
+                    : ''
+                }`}
+              >
+                Izoh{' '}
+                {hasPriceChanged ? (
+                  <span className="text-red-500">*</span>
+                ) : (
+                  '(ixtiyoriy)'
+                )}
+              </Label>
               <Input
-                className="py-2 px-3 text-sm sm:text-base"
+                className={`py-2 px-3 text-sm sm:text-base ${
+                  hasPriceChanged && validationErrors.comment
+                    ? 'border-red-500 focus-visible:ring-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.1)]'
+                    : ''
+                }`}
                 placeholder="Sotuv haqida qo'shimcha izoh..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
               />
+              {hasPriceChanged && validationErrors.comment && (
+                <p className="text-red-500 text-xs sm:text-[14px]">
+                  Narx o'zgarganda izoh kiritish majburiy
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
-        <Card className='py-6 md:py-0'>
+        <Card className="py-6 md:py-0">
           <CardContent className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between text-sm sm:text-base">
@@ -336,18 +381,25 @@ export default function Create_selling() {
               </div>
               <div className="flex items-center justify-between text-sm sm:text-base">
                 <span>Naqd: </span>
-                <span className="text-xs sm:text-sm">{payment.toLocaleString()} UZS</span>
+                <span className="text-xs sm:text-sm">
+                  {payment.toLocaleString()} UZS
+                </span>
               </div>
             </div>
             <div>
               <div className="text-lg sm:text-[20px] font-semibold flex items-center justify-between">
                 <span>Jami:</span>
-                <span className="text-base sm:text-[20px]">{total.toLocaleString()} UZS</span>
+                <span className="text-base sm:text-[20px]">
+                  {total.toLocaleString()} UZS
+                </span>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <span className="hidden sm:block"></span>
-              <Button className="bg-green-700 text-white w-full text-sm sm:text-base" onClick={sendItems}>
+              <Button
+                className="bg-green-700 text-white w-full text-sm sm:text-base"
+                onClick={sendItems}
+              >
                 <Check size={16} className="mr-2" /> {"To'lov qilish"}
               </Button>
             </div>
