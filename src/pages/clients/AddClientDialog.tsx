@@ -1,26 +1,26 @@
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from '@/components/ui/form'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { useAddClientMutation } from '@/store/clients/clients.api'
+import { Input } from '@/components/ui/input'
 import { useHandleRequest } from '@/hooks/use-handle-request'
 import { useGetUser } from '@/hooks/useGetUser'
+import { useAddClientMutation } from '@/store/clients/clients.api'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
 import { toast, Toaster } from 'sonner'
+import * as z from 'zod'
 
 type Props = {
   open: boolean
@@ -67,7 +67,7 @@ export default function AddClientDialog({ open, setOpen }: Props) {
     console.log('Form yuborildi:', data)
     await handleRequest({
       request: () =>
-        addClient({ ...data, branch_id: me?.branch_id._id as string }).unwrap(),
+        addClient({ ...data, branch_id: me?.branch_id?._id as string }).unwrap(),
       onSuccess: (data) => {
         toast.success(data.msg)
         setOpen(false)

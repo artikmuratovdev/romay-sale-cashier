@@ -53,13 +53,13 @@ const SearchInput = memo(() => {
     isFetching,
   } = useGetProductsInfiniteQuery(
     {
-      branch: me?.branch_id._id || '',
+      branch: me?.branch_id?._id || '',
       page: currentPage,
       limit: 20,
       search: debouncedSearch || undefined,
     },
     {
-      skip: !me?.branch_id._id,
+      skip: !me?.branch_id?._id,
       refetchOnMountOrArgChange: false,
       refetchOnFocus: false,
       refetchOnReconnect: true,
@@ -105,13 +105,13 @@ const SearchInput = memo(() => {
 
   // Optimize refetch - only refetch when shouldRefetch changes, not on every render
   useEffect(() => {
-    if (shouldRefetch && me?.branch_id._id) {
+    if (shouldRefetch && me?.branch_id?._id) {
       setCurrentPage(1)
       setAllLoadedProducts([])
       setHasNextPage(true)
       refetch()
     }
-  }, [shouldRefetch, refetch, me?.branch_id._id])
+  }, [shouldRefetch, refetch, me?.branch_id?._id])
 
   // Load more products function with optimized conditions
   const loadMoreProducts = useCallback(() => {
@@ -120,7 +120,7 @@ const SearchInput = memo(() => {
       !isFetching &&
       hasNextPage &&
       !isLoadingMore &&
-      me?.branch_id._id
+      me?.branch_id?._id
     ) {
       setIsLoadingMore(true)
 
@@ -139,7 +139,7 @@ const SearchInput = memo(() => {
         setIsLoadingMore(false)
       }, 1500)
     }
-  }, [isLoading, isFetching, hasNextPage, isLoadingMore, me?.branch_id._id])
+  }, [isLoading, isFetching, hasNextPage, isLoadingMore, me?.branch_id?._id])
 
   // Scroll event listener for infinite scrolling with throttling
   useEffect(() => {
@@ -164,7 +164,7 @@ const SearchInput = memo(() => {
           !isLoading &&
           !isFetching &&
           !isLoadingMore &&
-          me?.branch_id._id
+          me?.branch_id?._id
         ) {
           loadMoreProducts()
         }
@@ -185,7 +185,7 @@ const SearchInput = memo(() => {
     isLoadingMore,
     loadMoreProducts,
     allLoadedProducts.length,
-    me?.branch_id._id,
+    me?.branch_id?._id,
   ])
 
   // Get all products from Redux
@@ -269,14 +269,14 @@ const SearchInput = memo(() => {
       toast.error('Mahsulotlarni yuklashda xatolik yuz berdi')
 
       const retryTimeout = setTimeout(() => {
-        if (me?.branch_id._id) {
+        if (me?.branch_id?._id) {
           refetch()
         }
       }, 3000)
 
       return () => clearTimeout(retryTimeout)
     }
-  }, [error, isLoading, refetch, me?.branch_id._id])
+  }, [error, isLoading, refetch, me?.branch_id?._id])
 
   // Show loading state
   if ((isLoading && currentPage === 1) || error) {

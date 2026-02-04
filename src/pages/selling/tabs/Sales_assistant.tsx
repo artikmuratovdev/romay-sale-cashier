@@ -12,7 +12,7 @@ const Sales_assistant = () => {
   const [limit, setLimit] = useState(10)
 
   const { data, isLoading, isFetching } = useGetAllAssistantQuery({
-    branch_id: me?.branch_id._id,
+    branch_id: me?.branch_id?._id,
     page,
     limit,
     search,

@@ -23,10 +23,10 @@ import {
 import { ChevronUp, User2 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
-import { Package, Store, UserRound } from 'lucide-react'
-import { clearAuthTokens } from '@/utils/auth'
-import { useGetBranchByIdQuery } from '@/store/branch/branch.api'
 import { useGetUser } from '@/hooks/useGetUser'
+import { useGetBranchByIdQuery } from '@/store/branch/branch.api'
+import { clearAuthTokens } from '@/utils/auth'
+import { Package, Store, UserRound } from 'lucide-react'
 
 const HIDE_SIDEBAR_ROUTES = ['/auth/login']
 
@@ -36,11 +36,11 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   
   // Sales balance queryni bu yerda chaqiramiz
   const { data: branchData } = useGetBranchByIdQuery(
-    me?.branch_id._id as string,
+    me?.branch_id?._id as string,
     {
       refetchOnMountOrArgChange: true,
       refetchOnFocus: true,
-      skip: !me?.branch_id._id,
+      skip: !me?.branch_id?._id,
     }
   )
 

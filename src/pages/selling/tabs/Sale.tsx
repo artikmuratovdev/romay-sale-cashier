@@ -2,23 +2,23 @@ import { EditSaleModal } from '@/components/EditSaleModal'
 import { TablePagination } from '@/components/TablePagination'
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from '@/components/ui/popover'
 import { useHandleRequest } from '@/hooks/use-handle-request'
 import { useGetUser } from '@/hooks/useGetUser'
 import {
-  useDeleteSaleMutation,
-  useGetAllSalesQuery,
-  useUpdateSaleMutation,
+    useDeleteSaleMutation,
+    useGetAllSalesQuery,
+    useUpdateSaleMutation,
 } from '@/store/sales/salesApi'
 import type { Sale } from '@/store/sales/types'
 import { addDays, format } from 'date-fns'
@@ -53,7 +53,7 @@ export default function Sale() {
     refetch: refetchSales,
   } = useGetAllSalesQuery(
     {
-      branch_id: me?.branch_id._id as string,
+      branch_id: me?.branch_id?._id as string,
       page,
       limit,
       search,

@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useGetUser } from '@/hooks/useGetUser'
 import { useGetAllProductsQuery } from '@/store/product/product.api'
@@ -26,7 +26,7 @@ function ProductPage() {
     isLoading,
     isFetching,
   } = useGetAllProductsQuery({
-    branch: me?.branch_id._id,
+    branch: me?.branch_id?._id,
     page,
     limit,
     search,

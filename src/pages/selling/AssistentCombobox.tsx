@@ -1,28 +1,28 @@
 'use client'
 
-import * as React from 'react'
 import { Check, ChevronsUpDown } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
 } from '@/components/ui/command'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from '@/components/ui/popover'
 import { useGetUser } from '@/hooks/useGetUser'
-import { useDispatch, useSelector } from 'react-redux'
-import type { RootState } from '@/store/store'
-import { setAssistant } from '@/store/slice/Sale.slice'
+import { cn } from '@/lib/utils'
 import { useGetAllAssistantQuery } from '@/store/sales/salesApi'
+import { setAssistant } from '@/store/slice/Sale.slice'
+import type { RootState } from '@/store/store'
+import { useDispatch, useSelector } from 'react-redux'
 
 export function AssistantCombobox() {
   const [open, setOpen] = React.useState(false)
@@ -31,7 +31,7 @@ export function AssistantCombobox() {
   const dispatch = useDispatch()
 
   const { data: assistants } = useGetAllAssistantQuery({
-    branch_id: me?.branch_id._id,
+    branch_id: me?.branch_id?._id,
   })
 
   return (

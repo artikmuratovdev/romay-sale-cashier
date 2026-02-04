@@ -169,7 +169,7 @@ export default function Create_selling() {
 
     if (filteredProducts) {
       const data: CreateSale = {
-        branch_id: me?.branch_id._id as string,
+        branch_id: me?.branch_id?._id as string,
         cashier_id: me?._id as string,
         sales_assistant_id: AssistantId as string,
         comment: comment || undefined,
