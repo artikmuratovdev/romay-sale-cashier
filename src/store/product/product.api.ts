@@ -28,12 +28,6 @@ export const productApi = baseApi.injectEndpoints({
       GetProductsInfiniteRequest
     >({
       query: ({ branch, page = 1, limit = 20, search }) => {
-        console.log('API Query called with params:', {
-          branch,
-          page,
-          limit,
-          search,
-        })
         return {
           url: '/product/sale-product/get-all',
           method: 'GET',
@@ -48,13 +42,7 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: ['products'],
       keepUnusedDataFor: 60, // Reduced cache time for development
       // Remove merge and serializeQueryArgs to prevent double merging
-      transformResponse: (response: GetAllProductsResponse, _meta, arg) => {
-        console.log('API Response received:', {
-          page: arg.page,
-          dataLength: response?.data?.length,
-          nextPage: response?.next_page,
-          totalCount: response?.after_filtering_count,
-        })
+      transformResponse: (response: GetAllProductsResponse) => {
         return response
       },
       forceRefetch({ currentArg, previousArg }) {

@@ -2,7 +2,7 @@ import { useHandleRequest } from '@/hooks/use-handle-request'
 import { useGetUser } from '@/hooks/useGetUser'
 import { useCreateSaleMutation } from '@/store/sales/salesApi'
 import type { CreateSale } from '@/store/sales/types'
-import { resetSaleData, triggerRefetch } from '@/store/slice/Sale.slice'
+import { resetSaleData, setClient, triggerRefetch } from '@/store/slice/Sale.slice'
 import type { RootState } from '@/store/store'
 import { Check, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -13,6 +13,7 @@ import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
+import AddClientDialog from '../clients/AddClientDialog'
 import { AssistantCombobox } from './AssistentCombobox'
 import { ClientCombobox } from './ClientCombobox'
 import SearchInput from './SearchInput'
@@ -60,6 +61,14 @@ export default function Create_selling() {
     comment: false,
   })
 
+  const [openClientDialog, setOpenClientDialog] = useState(false)
+
+  const handleClientAdded = (newClient: string) : void => {
+    if (newClient) {
+      dispatch(setClient(newClient))
+    }
+  }
+
   const [date, setDate] = useState(new Date())
 
   useEffect(() => {
@@ -71,15 +80,10 @@ export default function Create_selling() {
   }, [])
 
   const { filteredProducts } = useSelector((state: RootState) => state.sale)
-  const total = filteredProducts.reduce(
-    (sum, p) => sum + (p.customPrice || p.product.price) * p.qty,
-    0
-  )
+  const total = filteredProducts.reduce((sum, p) => sum + (p.customPrice || p.product.price) * p.qty, 0)
 
   // Check if any product price has been changed
-  const hasPriceChanged = filteredProducts.some(
-    (p) => p.customPrice && p.customPrice !== p.product.price
-  )
+  const hasPriceChanged = filteredProducts.some((p) => p.customPrice && p.customPrice !== p.product.price)
 
   useEffect(() => {
     if (filteredProducts) {
@@ -111,9 +115,7 @@ export default function Create_selling() {
   }
 
   const validateSale = (): ValidationErrors => {
-    const isPriceChanged = filteredProducts.some(
-      (p) => p.customPrice && p.customPrice !== p.product.price
-    )
+    const isPriceChanged = filteredProducts.some((p) => p.customPrice && p.customPrice !== p.product.price)
 
     const errors: ValidationErrors = {
       products: !filteredProducts || filteredProducts.length === 0,
@@ -183,14 +185,11 @@ export default function Create_selling() {
       if (ClientId) {
         data.client_id = ClientId as string
       }
-      console.log(data)
 
       await handleRequest({
         request: () => createSale(data).unwrap(),
         onSuccess: (data) => {
-          toast.success(
-            data.msg || data.message || 'Sotuv muvaffaqiyatli yaratildi!'
-          )
+          toast.success(data.msg || data.message || 'Sotuv muvaffaqiyatli yaratildi!')
           resetSaleDataLocal()
           dispatch(triggerRefetch())
           navigate('/selling')
@@ -201,6 +200,10 @@ export default function Create_selling() {
       })
     }
   }
+
+  useEffect(() => {
+    dispatch(setClient('697ae7d5f52ac582dc86e05a'))
+  } , [])
 
   return (
     <div className="px-2 sm:px-4 md:px-0">
@@ -217,9 +220,7 @@ export default function Create_selling() {
           <Sale_Table />
         </div>
       ) : (
-        <Card
-          className={`${validationErrors.products ? 'border-red-500' : ''} bg-white`}
-        >
+        <Card className={`${validationErrors.products ? 'border-red-500' : ''} bg-white`}>
           <div className=" px-4 flex items-center justify-center flex-col">
             <div className="mb-2 w-20 h-20 sm:w-30 sm:h-30 bg-gray-100 rounded-full flex items-center justify-center">
               <img
@@ -240,8 +241,7 @@ export default function Create_selling() {
               Hozircha mahsulotlar yo'q
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 text-center max-w-sm px-4">
-              Yuqoridagi qidiruv orqali mahsulotlarni qo'shing va ular bu yerda
-              ko'rinadi
+              Yuqoridagi qidiruv orqali mahsulotlarni qo'shing va ular bu yerda ko'rinadi
             </p>
             {validationErrors.products && (
               <p className="text-red-500 text-xs sm:text-sm mt-4 bg-red-50 px-4 py-2 rounded-md text-center">
@@ -261,63 +261,49 @@ export default function Create_selling() {
                 <div className="flex-1">
                   <ClientCombobox />
                 </div>
+                <Button
+                  onClick={() => setOpenClientDialog(true)}
+                  variant="default"
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-sm sm:text-base py-2.5 sm:py-3 px-4"
+                >
+                  Mijoz qo'shish
+                </Button>
                 {ClientId && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => dispatch(resetSaleData())}
-                    className="shrink-0"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => dispatch(resetSaleData())} className="shrink-0">
                     <X className="text-red-500 w-4 h-4" />
                   </Button>
                 )}
               </div>
+              <AddClientDialog
+                open={openClientDialog}
+                setOpen={setOpenClientDialog}
+                onClientAdded={handleClientAdded}
+              />
             </div>
             <div className="flex flex-col gap-2">
-              <Label
-                className={`text-sm sm:text-base ${validationErrors.assistant ? 'text-red-500' : ''}`}
-              >
+              <Label className={`text-sm sm:text-base ${validationErrors.assistant ? 'text-red-500' : ''}`}>
                 Assistent {validationErrors.assistant && '*'}
               </Label>
               <div className="flex items-center gap-2">
-                <div
-                  className={`flex-1 ${
-                    validationErrors.assistant
-                      ? 'border-red-500 rounded-md border'
-                      : ''
-                  }`}
-                >
+                <div className={`flex-1 ${validationErrors.assistant ? 'border-red-500 rounded-md border' : ''}`}>
                   <AssistantCombobox />
                 </div>
                 {AssistantId && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => dispatch(resetSaleData())}
-                    className="shrink-0"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => dispatch(resetSaleData())} className="shrink-0">
                     <X className="text-red-500 w-4 h-4" />
                   </Button>
                 )}
               </div>
-              {validationErrors.assistant && (
-                <p className="text-red-500 text-xs sm:text-[14px]">
-                  Assistentni tanlang
-                </p>
-              )}
+              {validationErrors.assistant && <p className="text-red-500 text-xs sm:text-[14px]">Assistentni tanlang</p>}
             </div>
             <div className="flex flex-col gap-2">
-              <Label
-                className={`text-sm sm:text-base ${validationErrors.payment ? 'text-red-500' : ''}`}
-              >
+              <Label className={`text-sm sm:text-base ${validationErrors.payment ? 'text-red-500' : ''}`}>
                 Naqd {validationErrors.payment && '*'}
               </Label>
               <div className="relative">
                 <Input
                   className={`py-2 px-3 pr-12 sm:pr-10 text-sm sm:text-base ${
-                    validationErrors.payment
-                      ? 'border-red-500 focus-visible:ring-red-500'
-                      : ''
+                    validationErrors.payment ? 'border-red-500 focus-visible:ring-red-500' : ''
                   }`}
                   placeholder="0"
                   type="text"
@@ -327,30 +313,17 @@ export default function Create_selling() {
                     setPayment(value ? Number(value) : 0)
                   }}
                 />
-                <span className="absolute right-2 top-[10px] text-xs sm:text-[14px] text-[#71717A]">
-                  UZS
-                </span>
+                <span className="absolute right-2 top-[10px] text-xs sm:text-[14px] text-[#71717A]">UZS</span>
               </div>
               {validationErrors.payment && (
-                <p className="text-red-500 text-xs sm:text-[14px]">
-                  To'lov miqdorini kiriting
-                </p>
+                <p className="text-red-500 text-xs sm:text-[14px]">To'lov miqdorini kiriting</p>
               )}
             </div>
             <div className="flex flex-col gap-2">
               <Label
-                className={`text-sm sm:text-base ${
-                  hasPriceChanged && validationErrors.comment
-                    ? 'text-red-500'
-                    : ''
-                }`}
+                className={`text-sm sm:text-base ${hasPriceChanged && validationErrors.comment ? 'text-red-500' : ''}`}
               >
-                Izoh{' '}
-                {hasPriceChanged ? (
-                  <span className="text-red-500">*</span>
-                ) : (
-                  '(ixtiyoriy)'
-                )}
+                Izoh {hasPriceChanged ? <span className="text-red-500">*</span> : '(ixtiyoriy)'}
               </Label>
               <Input
                 className={`py-2 px-3 text-sm sm:text-base ${
@@ -363,9 +336,7 @@ export default function Create_selling() {
                 onChange={(e) => setComment(e.target.value)}
               />
               {hasPriceChanged && validationErrors.comment && (
-                <p className="text-red-500 text-xs sm:text-[14px]">
-                  Narx o'zgarganda izoh kiritish majburiy
-                </p>
+                <p className="text-red-500 text-xs sm:text-[14px]">Narx o'zgarganda izoh kiritish majburiy</p>
               )}
             </div>
           </CardContent>
@@ -381,25 +352,18 @@ export default function Create_selling() {
               </div>
               <div className="flex items-center justify-between text-sm sm:text-base">
                 <span>Naqd: </span>
-                <span className="text-xs sm:text-sm">
-                  {payment.toLocaleString()} UZS
-                </span>
+                <span className="text-xs sm:text-sm">{payment.toLocaleString()} UZS</span>
               </div>
             </div>
             <div>
               <div className="text-lg sm:text-[20px] font-semibold flex items-center justify-between">
                 <span>Jami:</span>
-                <span className="text-base sm:text-[20px]">
-                  {total.toLocaleString()} UZS
-                </span>
+                <span className="text-base sm:text-[20px]">{total.toLocaleString()} UZS</span>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <span className="hidden sm:block"></span>
-              <Button
-                className="bg-green-700 text-white w-full text-sm sm:text-base"
-                onClick={sendItems}
-              >
+              <Button className="bg-green-700 text-white w-full text-sm sm:text-base" onClick={sendItems}>
                 <Check size={16} className="mr-2" /> {"To'lov qilish"}
               </Button>
             </div>

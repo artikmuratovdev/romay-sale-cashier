@@ -97,7 +97,6 @@ export default function SupplierDetails() {
 
       setPaymentModalOpen(false)
       paymentForm.reset()
-      console.log('Payment successful!')
     } catch (error) {
       console.error('Payment failed:', error)
     }
@@ -117,7 +116,6 @@ export default function SupplierDetails() {
       setEditModalOpen(false)
       setSelectedPayment(null)
       editForm.reset()
-      console.log('Payment updated successfully!')
     } catch (error) {
       console.error('Payment update failed:', error)
     }

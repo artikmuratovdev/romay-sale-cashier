@@ -18,9 +18,7 @@ const SearchInput = memo(() => {
     [key: string]: boolean
   }>({})
   const [currentPage, setCurrentPage] = useState(1)
-  const [allLoadedProducts, setAllLoadedProducts] = useState<
-    ProductWarehouseItem[]
-  >([])
+  const [allLoadedProducts, setAllLoadedProducts] = useState<ProductWarehouseItem[]>([])
   const [hasNextPage, setHasNextPage] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -41,9 +39,7 @@ const SearchInput = memo(() => {
     return () => clearTimeout(timer)
   }, [search])
 
-  const shouldRefetch = useSelector(
-    (state: RootState) => state.sale.shouldRefetch
-  )
+  const shouldRefetch = useSelector((state: RootState) => state.sale.shouldRefetch)
 
   const {
     data: products,
@@ -75,10 +71,7 @@ const SearchInput = memo(() => {
         setAllLoadedProducts((prev) => {
           const newProducts = products.data as ProductWarehouseItem[]
           const uniqueNewProducts = newProducts.filter(
-            (newProduct) =>
-              !prev.find(
-                (existingProduct) => existingProduct._id === newProduct._id
-              )
+            (newProduct) => !prev.find((existingProduct) => existingProduct._id === newProduct._id)
           )
 
           const updatedProducts = [...prev, ...uniqueNewProducts]
@@ -93,8 +86,7 @@ const SearchInput = memo(() => {
       }
 
       // Check if there are more pages with additional validation
-      const hasMore =
-        products.next_page !== null && products.data && products.data.length > 0
+      const hasMore = products.next_page !== null && products.data && products.data.length > 0
 
       setHasNextPage(hasMore)
 
@@ -115,13 +107,7 @@ const SearchInput = memo(() => {
 
   // Load more products function with optimized conditions
   const loadMoreProducts = useCallback(() => {
-    if (
-      !isLoading &&
-      !isFetching &&
-      hasNextPage &&
-      !isLoadingMore &&
-      me?.branch_id?._id
-    ) {
+    if (!isLoading && !isFetching && hasNextPage && !isLoadingMore && me?.branch_id?._id) {
       setIsLoadingMore(true)
 
       setCurrentPage((prev) => {
@@ -189,21 +175,14 @@ const SearchInput = memo(() => {
   ])
 
   // Get all products from Redux
-  const allProductsFromRedux = useSelector(
-    (state: RootState) => state.sale.allProducts
-  )
+  const allProductsFromRedux = useSelector((state: RootState) => state.sale.allProducts)
 
   // Get filtered products from Redux to exclude them from search results
-  const filteredProductsFromRedux = useSelector(
-    (state: RootState) => state.sale.filteredProducts
-  )
+  const filteredProductsFromRedux = useSelector((state: RootState) => state.sale.filteredProducts)
 
   // Use loaded products from infinite scroll instead of Redux
   const allProducts = useMemo(() => {
-    const productsToUse =
-      allLoadedProducts.length > 0
-        ? allLoadedProducts
-        : allProductsFromRedux || []
+    const productsToUse = allLoadedProducts.length > 0 ? allLoadedProducts : allProductsFromRedux || []
 
     return productsToUse.filter((p) => {
       // Filter out products with 0 or less quantity
@@ -212,9 +191,7 @@ const SearchInput = memo(() => {
       }
 
       // First check if product is already in filtered products (cart)
-      const isAlreadySelected = filteredProductsFromRedux.some(
-        (filtered) => filtered._id === p._id
-      )
+      const isAlreadySelected = filteredProductsFromRedux.some((filtered) => filtered._id === p._id)
 
       if (isAlreadySelected) {
         return false
@@ -293,12 +270,9 @@ const SearchInput = memo(() => {
             }
             className="pr-10"
             disabled
+            value=""
           />
-          <ScanBarcode
-            size={24}
-            className="absolute right-2 top-2 cursor-pointer opacity-50"
-            color="#71717A"
-          />
+          <ScanBarcode size={24} className="absolute right-2 top-2 cursor-pointer opacity-50" color="#71717A" />
         </div>
       </div>
     )
@@ -323,9 +297,7 @@ const SearchInput = memo(() => {
           onClick={handleBarcodeClick}
         />
       </div>
-      <div
-        className={`absolute bg-white top-12 border-2 w-full rounded-lg z-50 shadow-lg ${focus && 'hidden'}`}
-      >
+      <div className={`absolute bg-white top-12 border-2 w-full rounded-lg z-50 shadow-lg ${focus && 'hidden'}`}>
         {/* Desktop table header */}
         <table className="w-full hidden md:table">
           <thead className="text-[#71717A] text-sm border-b w-full flex justify-between sticky top-0 bg-white">
@@ -364,9 +336,7 @@ const SearchInput = memo(() => {
                           <img
                             className="aspect-square w-full h-full object-cover rounded border border-gray-200"
                             src={
-                              imageErrors[p._id] || !p.product?.images?.[0]
-                                ? '/no_product.jpg'
-                                : p.product.images[0]
+                              imageErrors[p._id] || !p.product?.images?.[0] ? '/no_product.jpg' : p.product.images[0]
                             }
                             alt={p.product?.name || 'Product'}
                             onLoadStart={() => handleImageLoadStart(p._id)}
@@ -376,18 +346,10 @@ const SearchInput = memo(() => {
                           />
                         </div>
                       </td>
-                      <td className="px-7 py-3 text-center font-medium">
-                        {p.product?.name || 'N/A'}
-                      </td>
-                      <td className="px-7 py-3 text-center font-medium">
-                        {p.product?.barcode || '-'}
-                      </td>
-                      <td className="px-7 py-3 text-center font-medium">
-                        {p.product?.price || 0}
-                      </td>
-                      <td
-                        className={`px-7 py-3 ${p.product_count === 0 && 'text-red-500'} text-right font-medium`}
-                      >
+                      <td className="px-7 py-3 text-center font-medium">{p.product?.name || 'N/A'}</td>
+                      <td className="px-7 py-3 text-center font-medium">{p.product?.barcode || '-'}</td>
+                      <td className="px-7 py-3 text-center font-medium">{p.product?.price || 0}</td>
+                      <td className={`px-7 py-3 ${p.product_count === 0 && 'text-red-500'} text-right font-medium`}>
                         {p.product_count || 0}
                       </td>
                     </tr>
@@ -408,10 +370,7 @@ const SearchInput = memo(() => {
                   {/* End of results indicator */}
                   {!hasNextPage && allProducts.length > 0 && (
                     <tr className="w-full">
-                      <td
-                        colSpan={5}
-                        className="px-7 py-4 text-center text-gray-400 text-sm"
-                      >
+                      <td colSpan={5} className="px-7 py-4 text-center text-gray-400 text-sm">
                         Barcha mahsulotlar yuklandi
                       </td>
                     </tr>
@@ -419,10 +378,7 @@ const SearchInput = memo(() => {
                 </>
               ) : (
                 <tr className="w-full">
-                  <td
-                    colSpan={5}
-                    className="px-7 py-6 text-center text-gray-500"
-                  >
+                  <td colSpan={5} className="px-7 py-6 text-center text-gray-500">
                     {isLoading ? (
                       <div className="flex items-center justify-center space-x-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -457,11 +413,7 @@ const SearchInput = memo(() => {
                         )}
                         <img
                           className="aspect-square w-full h-full object-cover rounded border border-gray-200"
-                          src={
-                            imageErrors[p._id] || !p.product?.images?.[0]
-                              ? '/no_product.jpg'
-                              : p.product.images[0]
-                          }
+                          src={imageErrors[p._id] || !p.product?.images?.[0] ? '/no_product.jpg' : p.product.images[0]}
                           alt={p.product?.name || 'Product'}
                           onLoadStart={() => handleImageLoadStart(p._id)}
                           onLoad={() => handleImageLoadSuccess(p._id)}
@@ -474,9 +426,7 @@ const SearchInput = memo(() => {
                           {p.product?.name || 'N/A'}
                         </h4>
                         <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
-                          <span className="bg-gray-100 px-2 py-1 rounded">
-                            {p.product?.barcode || "Barcode yo'q"}
-                          </span>
+                          <span className="bg-gray-100 px-2 py-1 rounded">{p.product?.barcode || "Barcode yo'q"}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="font-semibold text-green-600 text-sm">
@@ -511,9 +461,7 @@ const SearchInput = memo(() => {
 
                 {/* Mobile end of results indicator */}
                 {!hasNextPage && allProducts.length > 0 && (
-                  <div className="px-4 py-4 text-center text-gray-400 text-sm">
-                    Barcha mahsulotlar yuklandi
-                  </div>
+                  <div className="px-4 py-4 text-center text-gray-400 text-sm">Barcha mahsulotlar yuklandi</div>
                 )}
               </>
             ) : (

@@ -1,11 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  decreaseQty,
-  increaseQty,
-  removeProduct,
-  updatePrice,
-} from '@/store/slice/Sale.slice'
+import { decreaseQty, increaseQty, removeProduct, updatePrice } from '@/store/slice/Sale.slice'
 import type { RootState } from '@/store/store'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -13,9 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 function Sale_Table() {
   const dispatch = useDispatch()
-  const products = useSelector(
-    (state: RootState) => state.sale.filteredProducts
-  )
+  const products = useSelector((state: RootState) => state.sale.filteredProducts)
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({})
 
   const handleImageError = useCallback((productId: string) => {
@@ -48,11 +41,11 @@ function Sale_Table() {
       dispatch(updatePrice({ id, price: 0 }))
       return
     }
-    
+
     // Remove any non-numeric characters except decimal point
     const cleanValue = value.replace(/[^0-9.]/g, '')
     const price = parseFloat(cleanValue)
-    
+
     if (!isNaN(price) && price >= 0) {
       dispatch(updatePrice({ id, price }))
     }
@@ -86,11 +79,7 @@ function Sale_Table() {
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 flex-shrink-0">
                       <img
-                        src={
-                          imageErrors[p._id] || !p.product?.images?.[0]
-                            ? '/no_product.jpg' :
-                            p.product.images[0]
-                        }
+                        src={imageErrors[p._id] || !p.product?.images?.[0] ? '/no_product.jpg' : p.product.images[0]}
                         alt={p.product.name}
                         className="w-full h-full rounded-md object-cover border border-gray-200"
                         onError={() => handleImageError(p._id)}
@@ -114,10 +103,7 @@ function Sale_Table() {
                       >
                         {truncateProductName(p.product.name)}
                       </div>
-                      <div
-                        className="text-xs text-gray-500 truncate mt-1"
-                        title={p.product?.barcode || "Barcode yo'q"}
-                      >
+                      <div className="text-xs text-gray-500 truncate mt-1" title={p.product?.barcode || "Barcode yo'q"}>
                         {p.product?.barcode
                           ? p.product.barcode.length > 15
                             ? p.product.barcode.substring(0, 15) + '...'
@@ -131,7 +117,7 @@ function Sale_Table() {
                   <div className="flex justify-center items-center gap-1">
                     <Input
                       type="text"
-                      value={p.customPrice !== undefined ? p.customPrice : p.product.price}
+                      value={(p.customPrice !== undefined ? p.customPrice : p.product.price) ?? ''}
                       onChange={(e) => handleUpdatePrice(p._id, e.target.value)}
                       onBlur={(e) => {
                         // Ensure we have a valid number when focus is lost
@@ -148,8 +134,7 @@ function Sale_Table() {
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
                   <span className="font-semibold text-green-600 whitespace-nowrap">
-                    {((p.customPrice || p.product.price) * p.qty).toLocaleString()}{' '}
-                    <span className="text-xs">UZS</span>
+                    {((p.customPrice || p.product.price) * p.qty).toLocaleString()} <span className="text-xs">UZS</span>
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
@@ -187,9 +172,7 @@ function Sale_Table() {
                           <Minus size={12} />
                         </Button>
                       )}
-                      <span className="text-center font-medium min-w-[24px] px-2">
-                        {p.qty}
-                      </span>
+                      <span className="text-center font-medium min-w-[24px] px-2">{p.qty}</span>
                       <Button
                         disabled={p.product_count === p.qty}
                         size="sm"
@@ -207,7 +190,7 @@ function Sale_Table() {
           </tbody>
         </table>
       </div>
-      
+
       {/* Mobile Card Layout */}
       <div className="md:hidden space-y-4">
         {products.map((p) => (
@@ -215,11 +198,7 @@ function Sale_Table() {
             <div className="flex items-start gap-3 mb-3">
               <div className="relative w-16 h-16 flex-shrink-0">
                 <img
-                  src={
-                    imageErrors[p._id] || !p.product?.images?.[0]
-                      ? '/package.svg'
-                      : p.product.images[0]
-                  }
+                  src={imageErrors[p._id] || !p.product?.images?.[0] ? '/package.svg' : p.product.images[0]}
                   alt={p.product.name}
                   className="w-full h-full rounded-md object-cover border border-gray-200"
                   onError={() => handleImageError(p._id)}
@@ -227,12 +206,8 @@ function Sale_Table() {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">
-                  {p.product.name}
-                </h3>
-                <p className="text-xs text-gray-500 mb-2">
-                  {p.product?.barcode || "Barcode yo'q"}
-                </p>
+                <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">{p.product.name}</h3>
+                <p className="text-xs text-gray-500 mb-2">{p.product?.barcode || "Barcode yo'q"}</p>
                 <div className="flex items-center gap-2">
                   <span
                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
@@ -248,7 +223,7 @@ function Sale_Table() {
                 </div>
               </div>
             </div>
-            
+
             {/* Price and Total */}
             <div className="grid grid-cols-2 gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="text-center">
@@ -256,7 +231,7 @@ function Sale_Table() {
                 <div className="flex flex-col items-center gap-1">
                   <Input
                     type="text"
-                    value={p.customPrice !== undefined ? p.customPrice : p.product.price}
+                    value={(p.customPrice !== undefined ? p.customPrice : p.product.price) ?? ''}
                     onChange={(e) => handleUpdatePrice(p._id, e.target.value)}
                     onBlur={(e) => {
                       // Ensure we have a valid number when focus is lost
@@ -274,12 +249,11 @@ function Sale_Table() {
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-1">Summa</p>
                 <p className="font-semibold text-green-600 text-sm">
-                  {((p.customPrice || p.product.price) * p.qty).toLocaleString()}{' '}
-                  <span className="text-xs">UZS</span>
+                  {((p.customPrice || p.product.price) * p.qty).toLocaleString()} <span className="text-xs">UZS</span>
                 </p>
               </div>
             </div>
-            
+
             {/* Quantity Controls */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Miqdor:</span>
@@ -303,9 +277,7 @@ function Sale_Table() {
                     <Minus size={14} />
                   </Button>
                 )}
-                <span className="text-center font-medium min-w-[32px] px-2 text-lg">
-                  {p.qty}
-                </span>
+                <span className="text-center font-medium min-w-[32px] px-2 text-lg">{p.qty}</span>
                 <Button
                   disabled={p.product_count === p.qty}
                   size="sm"

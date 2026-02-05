@@ -58,7 +58,24 @@ export interface ClientRequest {
   client_id?: string
 }
 
-export interface AddClientResponse {}
+export interface AddClientResponse {
+  success: boolean
+  msg: string
+  data: {
+    _id: string
+    username: string
+    description: string
+    sales_count: number
+    phone: string
+    profession: string
+    birth_date: Date
+    branch_id: string
+    address: string
+    customer_tier: string
+    created_at: Date
+    updated_at: Date
+  }
+}
 
 export interface AddClientRequest {
   username: string
@@ -67,7 +84,6 @@ export interface AddClientRequest {
   profession: string
   birth_date: string
   branch_id: string
-  address: string
   address: string
 }
 

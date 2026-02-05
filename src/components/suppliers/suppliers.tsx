@@ -145,7 +145,6 @@ export default function Suppliers() {
 
       setOpen(false)
       form.reset()
-      console.log('Supplier added successfully!')
     } catch (error) {
       console.error('Error adding supplier:', error)
     }

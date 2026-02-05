@@ -156,7 +156,6 @@ export default function Sale() {
         closeEditModal()
       },
       onError: (err) => {
-        console.log(err)
         toast.error(
           err?.message || err?.data?.error?.msg || 'Xatolik yuz berdi'
         )
